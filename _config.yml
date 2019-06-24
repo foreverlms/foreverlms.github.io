@@ -1,0 +1,30 @@
+# Site settings
+title: 寒鸥惊起一双双
+email: codechaser@163.com
+description: 珍惜时间
+# > # this means to ignore newlines until "baseurl:"
+#   Write an awesome description for your new site here. You can edit this
+#   line in _config.yml. It will appear in your document head meta (for
+#   Google search results) and in your feed.xml site description.
+
+baseurl: "" # the subpath of your site, e.g. /blog/
+url: "https://blog.bobliao.fun" # the base hostname & protocol for your site
+
+plugins: [jekyll-paginate]
+
+# twitter_username: jekyllrb
+github_username:  foreverlms
+# permalink: /:year/:month/:day/:title/
+
+paginate: 25
+paginate_path: "page:num"
+# Build settings
+markdown: kramdown
+
+# highlight
+# use rouge locally, pygments in Github
+# highlighter: pygments
+# highlighter: rouge
+# highlighter: false
+
+timezone: TIMEZONE

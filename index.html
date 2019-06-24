@@ -1,0 +1,53 @@
+---
+layout: default
+title: 寒鸥惊起一双双
+---
+
+<article>
+<blockquote><p>
+SLAM研究生,皇家马德里球迷.
+</p></blockquote>
+</article>
+
+<p style="text-align:left;margin-top:1.2em;margin-bottom:0;">
+<b>文章 </b>
+| 按<a href="/archive#tags">标签</a>浏览 
+<!--<span style="float:right;">按<a href="/cnarchive#tags">标签</a>浏览</span>-->
+</p>
+<hr>
+
+<table>
+<!-- {% for post in site.posts %}
+<tr id="blog-table">
+<td>{{ post.date | date: "%Y-%m-%d" }}</td>
+<td><a class="post-list-item" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a></td>
+</tr>	
+{% endfor %} -->
+{% for post in paginator.posts %}
+<tr id="blog-table">
+<td>{{ post.date | date: "%Y-%m-%d" }}</td>
+<td><a class="post-list-item" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a></td>
+</tr>
+{% endfor %}
+<!-- 分页 -->
+</table>
+<hr>
+<!-- Pagination links -->
+<div class="pagination">
+  {% if paginator.previous_page %}
+    <a href="{{ paginator.previous_page_path }}" class="previous">
+      上一页
+    </a>
+  {% else %}
+    <span class="previous">上一页</span>
+  {% endif %}
+  <span class="page_number ">
+     当前页数: {{ paginator.page }} of {{ paginator.total_pages }}
+  </span>
+  {% if paginator.next_page %}
+    <a href="{{ paginator.next_page_path }}" class="next">下一页</a>
+  {% else %}
+    <span class="next ">下一页</span>
+  {% endif %}
+</div>
+<p>博文<a href="/archive">归档</a></p>

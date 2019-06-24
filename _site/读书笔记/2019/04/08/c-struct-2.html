@@ -1,0 +1,192 @@
+	<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>C Primer Plus--结构和其他数据类型(2)</title>
+	<meta name="description" content="C中结构(Struct)小记-2">
+	<meta name="keywords" content="c, C Primer Plus, 寒鸥惊起一双双" />
+	<link rel="canonical" href="http://localhost:4000/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2019/04/08/c-struct-2.html">
+	<link rel="alternate" type="application/rss+xml" title="寒鸥惊起一双双" href="http://localhost:4000/feed.xml" />
+   	<link rel="stylesheet" type="text/css" href="/css/index.css">
+</head>
+
+<body>
+<div class="body-wrapper">
+<div class="nav-header">
+<a href="/">寒鸥惊起一双双</a> | <a href="https://github.com/foreverlms" target="_blank">Github</a> |<a href="/about">关于 </a></div>
+<div class="main-body">
+<header>
+<h2>C Primer Plus--结构和其他数据类型(2)</h2>
+<p><i>2019-04-08</i></p>
+</header>
+<article>
+<p>C中结构(Struct)小记-2
+<!--more--></p>
+
+<h2 id="枚举类型-enumerated-type">枚举类型 enumerated type</h2>
+<p>枚举是用来代表整数常量的符号，枚举类型的声明与struct声明类似。枚举常量都是<code class="highlighter-rouge">int</code>型的。枚举声明的花括号内枚举了该类型变量可能有的值。枚举是为了增强程序的可读性。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">enum</span> <span class="n">vehicle</span> <span class="p">{</span><span class="n">bicycle</span><span class="p">,</span><span class="n">car</span><span class="p">,</span><span class="n">plane</span><span class="p">,</span><span class="n">train</span><span class="p">,</span><span class="n">ship</span><span class="p">};</span>
+</code></pre></div></div>
+<p>上面说了枚举类型就是<code class="highlighter-rouge">int</code>类型的常量，那么凡是可以使用<code class="highlighter-rouge">int</code>的地方都可以使用枚举常量。</p>
+
+<h3 id="枚举默认值">枚举默认值</h3>
+<p>枚举列表中的默认值被指定为整数值0、1、2等等。如上面枚举声明中：
+<code class="highlighter-rouge">bicycle</code>、<code class="highlighter-rouge">car</code>、<code class="highlighter-rouge">plane</code>、<code class="highlighter-rouge">train</code>、<code class="highlighter-rouge">ship</code>的值依次为<code class="highlighter-rouge">0 1 2 3 4</code>。</p>
+<h3 id="为枚举指定值">为枚举指定值</h3>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="k">enum</span> <span class="n">levels</span> <span class="p">{</span><span class="n">low</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">medium</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span> <span class="n">perfect</span> <span class="o">=</span> <span class="mi">100</span><span class="p">};</span>
+    <span class="k">enum</span> <span class="n">phones</span> <span class="p">{</span><span class="n">ios</span><span class="p">,</span> <span class="n">windowsPhone</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span> <span class="n">blackberry</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span> <span class="n">android</span><span class="p">};</span>
+    <span class="c1">//ios = 0; android = 81</span>
+</code></pre></div></div>
+
+<p>在C中，允许对枚举类型的变量使用自增(++)或自减(–)符号，但是在C++中不允许，为了使得程序兼容，应该一开就将变量声明为<code class="highlighter-rouge">int</code>型。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">enum</span> <span class="n">vehicle</span> <span class="p">{</span><span class="n">bicycle</span><span class="p">,</span><span class="n">car</span><span class="p">,</span><span class="n">plane</span><span class="p">,</span><span class="n">train</span><span class="p">,</span><span class="n">ship</span><span class="p">};</span>
+    <span class="k">enum</span> <span class="n">vehicle</span> <span class="n">trans</span><span class="p">;</span>
+    <span class="c1">//在C++中要声明为</span>
+    <span class="c1">//int trans;</span>
+    <span class="c1">//trans此时的值不确定，需要赋值</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">trans</span> <span class="o">=</span> <span class="n">bicycle</span><span class="p">;</span>  <span class="n">trans</span> <span class="o">&lt;=</span> <span class="n">ship</span>  <span class="p">;</span> <span class="n">trans</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">trans</span><span class="p">);</span>
+    <span class="p">}</span>
+</code></pre></div></div>
+<h3 id="命名空间-namespace">命名空间 namespace</h3>
+<p>在C中，变量名和标记名（结构标记、联合标记、枚举标记）不在同一个命名空间中，因此二者可以同名，但在C++中不可以。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">car</span> <span class="p">{</span>
+        <span class="kt">char</span> <span class="n">brand</span><span class="p">[</span><span class="mi">30</span><span class="p">];</span>
+        <span class="kt">int</span> <span class="n">litre</span><span class="p">;</span>
+    <span class="p">};</span>
+    <span class="kt">int</span> <span class="n">car</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="c1">//C中不冲突</span>
+</code></pre></div></div>
+<h2 id="typedef关键字"><code class="highlighter-rouge">typedef</code>关键字</h2>
+<blockquote>
+  <p><code class="highlighter-rouge">typedef</code>工具是一种高级数据特性，他使您能够为某一类型创建您自己的名字。在这个方面，它和<code class="highlighter-rouge">#define</code>相似，但是它们具有三个不同之处：</p>
+  <ol>
+    <li>与<code class="highlighter-rouge">#define</code>不同，<code class="highlighter-rouge">typedef</code>给出的符号名称仅限于对类型，而不是对值</li>
+    <li><code class="highlighter-rouge">typedef</code>的解释由编译器而不是预处理器执行</li>
+    <li>虽然它的的范围有限，但在其受限范围内，<code class="highlighter-rouge">typedef</code>比<code class="highlighter-rouge">#define</code>更灵活</li>
+  </ol>
+</blockquote>
+
+<p>这里就告诉我们<code class="highlighter-rouge">typedef</code>并不创建新的数据类型，只是创建了易于使用的标签别名。
+例：顶一个一个数据类型别名<code class="highlighter-rouge">BYTE</code>，它只占一个字节，可以先定义一个<code class="highlighter-rouge">char</code>变量<code class="highlighter-rouge">BYTE</code>,然后在前面加上<code class="highlighter-rouge">typedef</code>即可。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="kt">unsigned</span> <span class="n">cahr</span> <span class="n">BYTE</span><span class="p">;</span>
+
+<span class="n">BYTE</span> <span class="n">x</span><span class="p">;</span><span class="c1">//定义一个x</span>
+<span class="n">BYTE</span> <span class="n">Y</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span><span class="c1">//定义一个数组容纳十个BYTE</span>
+<span class="n">BYTE</span> <span class="o">*</span> <span class="n">z</span><span class="p">;</span><span class="c1">//定义一个指向BYTE的指针</span>
+</code></pre></div></div>
+
+<p>总之，<code class="highlighter-rouge">#define</code>只是由预处理器对文件里的字符进行替换，而<code class="highlighter-rouge">typedef</code>则新建了一种数据类型的代替。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="kt">char</span> <span class="o">*</span> <span class="n">STRING</span><span class="p">;</span><span class="c1">//STRING成了char指针的别名</span>
+<span class="n">STRING</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">;</span><span class="c1">//声明两个char指针a,b</span>
+
+<span class="c1">//若是用define来试一试</span>
+<span class="cp">#define STRING char *;
+</span>
+<span class="n">STRING</span> <span class="n">a</span> <span class="p">,</span> <span class="n">b</span><span class="p">;</span><span class="c1">//这里被预处理器替换，成了char * a , b；两个就不都是指针了，只有a是，b成了字符。</span>
+
+<span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+	<span class="kt">float</span> <span class="n">real</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">imag</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">COMPLEX</span><span class="p">;</span> <span class="c1">//将这个struct起个别名COMPLEX</span>
+
+<span class="n">COMPLEX</span> <span class="n">foo</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span> <span class="p">,</span><span class="mi">1</span><span class="p">};</span><span class="c1">//一个复数</span>
+</code></pre></div></div>
+<p>复杂的<code class="highlighter-rouge">typedef</code>：</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="kt">char</span> <span class="p">(</span><span class="o">*</span> <span class="n">FRPTC</span><span class="p">())[</span><span class="mi">5</span><span class="p">];</span>
+</code></pre></div></div>
+<p>这里<code class="highlighter-rouge">FPRTC</code>返回的是一个指向含有5个元素的<code class="highlighter-rouge">char</code>数组的指针。</p>
+
+<h2 id="--修饰符"><code class="highlighter-rouge">*</code> <code class="highlighter-rouge">()</code> <code class="highlighter-rouge">[]</code>修饰符</h2>
+<p>这三者优先级有低到高：<code class="highlighter-rouge">* &lt; () = []</code>，而且他们与变量名的结合是从左到右的。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">foo</span><span class="p">[</span><span class="mi">12</span><span class="p">][</span><span class="mi">24</span><span class="p">];</span><span class="c1">//一个12x24的int二维数组</span>
+<span class="kt">int</span> <span class="o">*</span> <span class="n">p</span><span class="p">;</span><span class="c1">//一个指向int的指针</span>
+<span class="kt">int</span> <span class="o">**</span> <span class="n">ptr</span><span class="p">;</span><span class="c1">//一个指向int的指针的指针</span>
+<span class="kt">char</span> <span class="o">*</span> <span class="n">strings</span><span class="p">[</span><span class="mi">5</span><span class="p">];</span><span class="c1">//一个数组，共5个元素，每个元素是一个指向char的指针</span>
+<span class="kt">int</span> <span class="p">(</span><span class="o">*</span> <span class="n">pointer</span><span class="p">)</span> <span class="p">[</span><span class="mi">5</span><span class="p">];</span><span class="c1">//一个指向int[5]数组的指针</span>
+<span class="kt">int</span> <span class="o">*</span> <span class="n">bar</span><span class="p">[</span><span class="mi">12</span><span class="p">][</span><span class="mi">24</span><span class="p">];</span><span class="c1">//一个12x24的二维数组，每个元素是一个指向int的指针</span>
+<span class="kt">int</span> <span class="p">(</span><span class="o">*</span> <span class="n">pp</span><span class="p">)</span> <span class="p">[</span><span class="mi">12</span><span class="p">][</span><span class="mi">24</span><span class="p">];</span><span class="c1">//一个指向12x24二维数组的指针</span>
+<span class="kt">int</span> <span class="p">(</span><span class="o">*</span> <span class="n">ppp</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="p">[</span><span class="mi">4</span><span class="p">];</span><span class="c1">//一个数组，共三个元素，每个元素是一个指向int[4]数组的指针</span>
+
+<span class="kt">char</span> <span class="o">*</span> <span class="nf">func</span><span class="p">();</span><span class="c1">//一个返回值为指向char的指针的函数</span>
+<span class="kt">char</span> <span class="p">(</span><span class="o">*</span> <span class="n">funcp</span><span class="p">)</span> <span class="n">func1</span><span class="p">();</span><span class="c1">//一个指针，该指针指向一个返回类型为char的函数</span>
+<span class="kt">char</span> <span class="p">(</span><span class="o">*</span> <span class="n">funcps</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="n">func2</span><span class="p">();</span><span class="c1">//一个数组，共3个元素，每个元素是一个指针，指针指向一个返回值为char的函数</span>
+</code></pre></div></div>
+
+<h3 id="typedef与这三个运算符结合"><code class="highlighter-rouge">typedef</code>与这三个运算符结合</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="kt">int</span> <span class="n">array5</span><span class="p">[</span><span class="mi">5</span><span class="p">];</span>
+<span class="k">typedef</span> <span class="n">array5</span> <span class="o">*</span> <span class="n">p_to_array5</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">p_to_array5</span> <span class="n">arrayp</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>
+
+<span class="n">array5</span> <span class="n">foo</span><span class="p">;</span><span class="c1">//foo是一个int[5]数组</span>
+<span class="n">p_to_array5</span> <span class="n">p</span><span class="p">;</span><span class="c1">//p是一个指向int[5]数组的指针</span>
+<span class="n">arrayp</span> <span class="n">array</span><span class="p">;</span><span class="c1">//array是一个数组，共10个元素，每个元素是一个p_to_array5指针</span>
+</code></pre></div></div>
+
+<h2 id="函数与指针">函数与指针</h2>
+<p>指针可以指向函数。指向函数的指针保存着函数代码起始处的地址。当声明一个函数指针时，必须声明它指向的函数类型，即指定函数的返回类型以及函数的参量类型。
+<code class="highlighter-rouge">void eat(char * food);</code>声明了一个形式参量为字符指针的的函数，要声明一个指向这样类型函数的指针，需要这样做：
+<code class="highlighter-rouge">void (* pointer) (char *);</code></p>
+
+<blockquote>
+  <p>声明一个指向特定函数类型的指针，首先声明一个该类型的函数，然后用<code class="highlighter-rouge">(* pf)</code>形式的表达式替换函数名称，<code class="highlighter-rouge">pf</code>就成为了可指向那种类型函数的指针了。</p>
+</blockquote>
+
+<p>声明了指针之后，还需对指针进行赋值，赋值给指针的函数必须拥有与指针声明中一致的形参和返回值。</p>
+<h3 id="函数指针作为参数">函数指针作为参数</h3>
+<p>有了函数的指针，可以利用指针来访问函数：</p>
+<ul>
+  <li>通过 <code class="highlighter-rouge">(*pf) (参数)</code>的方式访问函数</li>
+  <li>通过 <code class="highlighter-rouge">pf (参数)</code>的方式访问函数</li>
+</ul>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+</span>
+<span class="kt">void</span> <span class="nf">toUpper</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">toLower</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">foo</span><span class="p">(</span> <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">pf</span><span class="p">)(</span><span class="kt">char</span> <span class="o">*</span><span class="p">),</span><span class="kt">char</span> <span class="o">*</span> <span class="n">string</span><span class="p">);</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">pf</span><span class="p">)</span> <span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">);</span>
+    
+    <span class="kt">char</span> <span class="n">test</span><span class="p">[]</span> <span class="o">=</span> <span class="s">"I love you"</span><span class="p">;</span>
+    
+    <span class="n">pf</span> <span class="o">=</span> <span class="n">toUpper</span><span class="p">;</span>
+    
+    <span class="p">(</span><span class="o">*</span> <span class="n">pf</span><span class="p">)(</span><span class="n">test</span><span class="p">);</span><span class="c1">//1</span>
+    
+    <span class="n">pf</span> <span class="o">=</span> <span class="n">toLower</span><span class="p">;</span>
+    
+    <span class="n">pf</span><span class="p">(</span><span class="n">test</span><span class="p">);</span><span class="c1">//2</span>
+    
+    <span class="n">foo</span><span class="p">(</span><span class="n">pf</span><span class="p">,</span><span class="n">test</span><span class="p">);</span><span class="c1">//foo函数调用</span>
+<span class="p">}</span>
+<span class="cm">/*
+ * foo接受一个函数指针与char指针
+ */</span>
+<span class="kt">void</span> <span class="nf">foo</span><span class="p">(</span> <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">pf</span><span class="p">)(</span><span class="kt">char</span> <span class="o">*</span><span class="p">),</span><span class="kt">char</span> <span class="o">*</span> <span class="n">string</span><span class="p">){</span>
+    <span class="n">pf</span><span class="p">(</span><span class="n">string</span><span class="p">);</span>
+    <span class="n">puts</span><span class="p">(</span><span class="n">string</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+</article>
+<div id="info-bottom">
+<hr>
+<p>标签: <block class="tag"><a href="/archive/#c">c</a></block><block class="tag"><a href="/archive/#C Primer Plus">C Primer Plus</a></block></p>
+<p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
+<p><b>聊天</b>请在 <a href="https://gitter.im/foreverlms/community">foreverlms</a> </p>
+</div>
+
+</div>
+<div class="info-bottom"><div class="info-bottom-text">
+License <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a> | Subscribe <a href="/feed.xml">RSS</a> | Email <a href="mailto:codechaser@163.com">codechaser@163.com</a> | 博客模板 <a href="https://fzheng.me/" target="_blank">无求备斋笔记</a>
+</div></div> 
+</div>
+</body>
+<script src="https://use.typekit.net/hvv6ahj.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+</html>

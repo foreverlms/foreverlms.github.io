@@ -1,0 +1,142 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,left=1cm,right=1cm,top=1.cm,bottom=0cm]{geometry}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{xeCJK}
+\setCJKmainfont{Noto Serif CJK SC}
+\usepackage{fontawesome}
+\usepackage{libertine}
+
+\newcommand{\subsec}[1]{
+  \vskip 4pt
+  {\bf\large\color{teal}  #1}
+  \vskip 1pt
+}
+\newcommand{\yearspaceevent}[3]{
+  {\color{gray} \small #1 \hfill #2}\\
+  {\bf #3}
+}
+\newcommand{\yearat}[1]{
+  {\hfill \color{gray} #1}
+}
+
+\setlist{leftmargin=4mm,topsep=3pt,itemsep=-1pt}
+
+\begin{document}
+\pagenumbering{gobble}
+
+{
+  \centering {\bf\large ZHENG, Fan 郑帆} \\
+  \faEnvelopeO \space hi@fzheng.me \space\space
+  \faLink \space  fzheng.me \space\space
+  \faGithub \space github.com/izhengfan
+\par}
+\noindent
+\begin{minipage}[t]{0.6\textwidth}
+
+  \subsec{Experience}
+
+  \yearspaceevent{2019-}{Shenzhen, China}{VisionNav Robotics, R\&D Manager}
+  \begin{itemize}
+    \item Work on AGV navigation
+  \end{itemize}
+
+  \yearspaceevent{2015-2016}{Shenzhen \& Hong Kong, China}{VisionNav Robotics, Internship on SLAM}
+  \begin{itemize}
+    \item Develop a real-time SLAM system for AGV in indoor industrial environments, based on odometry and mono-vision, achieving \~{}10cm localization accuracy
+  \end{itemize}
+
+  \yearspaceevent{2013}{Wuxi, China}{Atlas Copco (Wuxi), Internship on Robotics}
+  \begin{itemize}
+    \item Develop a 6-DoF robotic arm prototype for deburring edges of air compressor rotors, and complete a prototype whose end-effector can move along a desired trajectory
+  \end{itemize}
+
+  \subsec{Projects}
+  \yearspaceevent{2012-2014}{Hangzhou, China}{Mechanical Design for Humanoid Robots}
+  \begin{itemize}
+    \item With \emph{ZJUDANCER}, a team developing humanoid football player robots
+    \item Design robot mechanical structure with SolidWorks, contact for parts manufacturing, assemble and maintain the robot
+    \item Lead the mechanical group in 2013-2014
+  \end{itemize}
+  \yearspaceevent{2013-2014}{Hangzhou, China}{Tactile Sensors Test Platform Development}
+  \begin{itemize}
+    \item Final-year project: develope a mechatronic platform with 3D translation and 3D rotation, which can
+      precisely move the stimulator tip to execute test work of required motion on tactile sensors
+  \end{itemize}
+  \yearspaceevent{2014-2019}{Hong Kong, China}{Odometry/IMU-Aided Visual State Estimation}
+  \begin{itemize}
+    \item Ph.D. thesis work: develop visual state estimation systems aided by odometry/IMU for ground vehicles, by utilizing the motion prior information in graph optimization
+    \item Achieve better accuracy and robustness than state-of-the-art visual or visual inertial estimation systems
+  \end{itemize}
+
+  \subsec{Publications}
+
+  \begin{itemize}
+    \item {\bf Fan Zheng}, Yun-Hui Liu. ``SE(2)-Constrained Visual Inertial Fusion for Ground Vehicles''. {\it IEEE Sensors Journal}, vol. 18, no. 23, 2018.
+    \item {\bf Fan Zheng}, Hengbo Tang, Yun-Hui Liu. ``Odometry-Vision-Based Ground Vehicle Motion Estimation With SE(2)-Constrained SE(3) Poses''. {\it IEEE Transactions on Cybernetics}, vol. 49, no. 7, 2019.
+    \item {\bf Fan Zheng}, Yun-Hui Liu. ``Visual-Odometric Localization and Mapping for Ground Vehicles Using SE(2)-XYZ Constraints''. {\it Proc. IEEE International Conference on Robotics and Automation (ICRA)}, 2019.
+    \item {\bf Fan Zheng}, Yun-Hui Liu. ``Keypoint Matching Outlier Removal with 3DMP Histogram Voting''. {\it Proc. World Congress on Intelligent Control and Automation (WCICA)}, 2018.
+    \item {\bf Fan Zheng}, Yun-Hui Liu. ``A Geometric Model for Fusing IMU into Monocular Visual Localization of 3-D Mobile Robots''. {\it Proc. IEEE International Conference on Real-time Computing and Robotics (RCAR)}, 2016.
+  \end{itemize}
+
+\end{minipage}
+\hfill\begingroup\color{teal}\vrule width 1pt\endgroup\hfill
+\noindent
+\begin{minipage}[t]{0.34\textwidth}
+  \subsec{Education}
+  \yearspaceevent{2014-2019}{Hong Kong, China}{The Chinese University of Hong Kong}
+  \begin{itemize}
+    \item Ph.D. in Mechanical and Automation Engineering
+  \end{itemize}
+
+  \yearspaceevent{2010-2014}{Hangzhou, China}{Zhejiang University}
+  \begin{itemize}
+    \item B.Eng. in Mechatronic Engineering
+    \item {Minor} in Morningside Cultural China Leadership Program (CCLP)
+  \end{itemize}
+
+  \subsec{Teaching}
+  \emph{as Teaching Assistant}
+  \begin{itemize}
+    \item Robotics \yearat{2015/2016}
+    \item Modern Control and Theory \yearat{2014/2015}
+    \item Mechanics of Materials \yearat{2014/2015}
+  \end{itemize}
+
+  \subsec{Voluntary Service}
+  \begin{itemize}
+    \item Student ambassador,  HKPFS Summer Workshop, CUHK Engineering \yearat{2015}
+    \item Student Helper, IEEE ROBIO international conference \yearat{2014}
+    \item Manager, 4th CCLP Graduation Ceremony \yearat{2014}
+  \end{itemize}
+
+  \subsec{Skills}
+  {\bf Languages}
+  \begin{itemize}
+    \item Mandarin, Teochew (native)
+    \item English, Cantonese (fluent)
+  \end{itemize}
+  {\bf Programming}
+  \begin{itemize}
+    \item C++(Qt, ROS, OpenCV, Eigen, g2o, Ceres Solver)
+    \item Python
+    \item MATLAB
+  \end{itemize}
+  {\bf Softwares}
+  \begin{itemize}
+    \item MS Office
+    \item SolidWorks, AutoCAD
+    \item \LaTeX
+    \item Bash, Git, Vim, CMake, etc.
+  \end{itemize}
+
+  \subsec{Honors}
+  \begin{itemize}
+    \item Hong Kong PhD Fellowship (Top \~{}200 in Hong Kong) \yearat{2014}
+    \item Top-8 Team in RoboCup, Humanoid Kidsize \yearat{2014}
+    \item Championship in RoboCup China, Humanoid Kidsize \yearat{2013}
+    \item National Scholarship (1/72) \yearat{2012}
+  \end{itemize}
+\end{minipage}
+\end{document}

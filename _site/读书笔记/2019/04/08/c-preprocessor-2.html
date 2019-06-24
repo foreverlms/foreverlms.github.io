@@ -1,0 +1,174 @@
+	<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>C Primer Plus--C预处理器和C库(1)</title>
+	<meta name="description" content="C源码编译期间的预处理器(Preprocessor)">
+	<meta name="keywords" content="c, C Primer Plus, 寒鸥惊起一双双" />
+	<link rel="canonical" href="http://localhost:4000/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2019/04/08/c-preprocessor-2.html">
+	<link rel="alternate" type="application/rss+xml" title="寒鸥惊起一双双" href="http://localhost:4000/feed.xml" />
+   	<link rel="stylesheet" type="text/css" href="/css/index.css">
+</head>
+
+<body>
+<div class="body-wrapper">
+<div class="nav-header">
+<a href="/">寒鸥惊起一双双</a> | <a href="https://github.com/foreverlms" target="_blank">Github</a> |<a href="/about">关于 </a></div>
+<div class="main-body">
+<header>
+<h2>C Primer Plus--C预处理器和C库(1)</h2>
+<p><i>2019-04-08</i></p>
+</header>
+<article>
+<p>C源码编译期间的预处理器(Preprocessor)
+<!--more--></p>
+
+<h2 id="include指令">#include指令</h2>
+
+<ul>
+  <li>#include <头文件.h>//在标准系统目录中寻找头文件</头文件.h></li>
+  <li>#include “头文件.h”//先在当前目录下面寻找头文件，然后在标准系统目录下寻找头文件</li>
+</ul>
+
+<p>预处理器在碰到<code class="highlighter-rouge">#inclide</code>指令时，就会将后面附加的头文件的内容包含到当前文件中。</p>
+
+<h3 id="头文件">头文件</h3>
+<p>后缀为<code class="highlighter-rouge">.h</code>的文件是头文件。这类文件经常包含预处理器所需要的语句。
+头文件内容最常见形式包括：</p>
+<ul>
+  <li>明显常量</li>
+  <li>宏函数</li>
+  <li>函数声明</li>
+  <li>结构模板定义</li>
+  <li>类型定义</li>
+</ul>
+
+<h2 id="其他指令">其他指令</h2>
+<h3 id="undef"><code class="highlighter-rouge">#undef</code></h3>
+<p><code class="highlighter-rouge">#undef</code>指令取消一个给定的已定义<code class="highlighter-rouge">#define</code>.</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#define FF 10
+</span>
+<span class="cp">#undef FF //FF定义被取消
+</span></code></pre></div></div>
+<h3 id="条件编译">条件编译</h3>
+<h4 id="ifdef-else-endif"><code class="highlighter-rouge">#ifdef</code> <code class="highlighter-rouge">#else</code> <code class="highlighter-rouge">#endif</code></h4>
+<p><code class="highlighter-rouge">#ifdef</code>后面的标识符如果已经定义了，那么执行它的分支控制的指令，知道下一个<code class="highlighter-rouge">#else</code>或<code class="highlighter-rouge">#endif</code>为止。如果有<code class="highlighter-rouge">#else</code>存在，那么在未定义时会执行<code class="highlighter-rouge">#else</code>知道<code class="highlighter-rouge">#endif</code>之间的所有指令。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#define FF 10
+</span>
+<span class="cp">#ifdef FF
+#define AA 100
+#else
+#define AA 1000
+#endif
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"FF :%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">AA</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<h4 id="ifndef"><code class="highlighter-rouge">#ifndef</code></h4>
+<p><code class="highlighter-rouge">#ifndef</code>是<code class="highlighter-rouge">#ifdef</code>的反义词，它是用来确定后面的表示符未被定义。通常用来定义此前未被定义的常量。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#ifndef FF
+#define FF 199
+#endif
+</span><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"FF :%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">FF</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p><code class="highlighter-rouge">#ifndef</code>也可以用于防止多次包含同一文件。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*
+ *假设这个头文件是test.h
+ */</span>
+ <span class="c1">//原本头文件的内容直接写，现在我们把头文件的内容放到下面这样的结构里：</span>
+ <span class="cp">#ifndef _TEST_H
+</span> <span class="cp">#define _TEST_H
+</span> <span class="cm">/*
+  *#define和#endif之间存放头文件的所有内容
+  */</span>
+ <span class="cp">#endif
+</span></code></pre></div></div>
+<p>来看看上面这段代码什么意思：
+首先，明确我们的目的：防止一个文件被多次的include。为什么会存在多次include呢？因为可能一个文件会include多个文件，而不同文件有可能include同一个文件，而在一个文件中只能对一个文件中include一次。举个栗子：存在<code class="highlighter-rouge">a.h</code>,<code class="highlighter-rouge">b.h</code>,<code class="highlighter-rouge">test.h</code>，有可能<code class="highlighter-rouge">a.h</code>中有一个<code class="highlighter-rouge">#include "test.h"</code>，同时<code class="highlighter-rouge">b.c</code>中有两行</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include "a.h"
+#include "test.h"
+</span></code></pre></div></div>
+<p>这样就出现了<code class="highlighter-rouge">b.h</code>被包含了两次，而C是不允许这样的。上面用到<code class="highlighter-rouge">#ifndef</code>就解决了这个问题。
+当<code class="highlighter-rouge">test.h</code>未被定义，也就是说这个头文件被第一次包含了，会定义一个<code class="highlighter-rouge">_TEST_H</code>的常量，但没有body，因为我们不需要这个常量具有body。这时候头文件里的所有内容被预处理器执行。当<code class="highlighter-rouge">test.h</code>被第二次包含时，预处理器检测到已经存在<code class="highlighter-rouge">_TEST_H</code>这个量，就会跳过，也就不会重复执行头文件里的内容了。<strong>这里的关键是保持<code class="highlighter-rouge">_TEST_H</code>的唯一。我们这里用头文件的文件名做标识符，将文件名前面加下划线，并将点换成下划线，能够保证这个标识符不重复。</strong>但这种做法是编译器提供商为了标准头文件采用的方法，我们平时自己写的时候要想防止与标准头文件冲突，就不要按这种方法来取标识符。例如可以把下划线加到文件名后面等等。</p>
+<h4 id="if和elif"><code class="highlighter-rouge">#if</code>和<code class="highlighter-rouge">#elif</code></h4>
+<p><code class="highlighter-rouge">#if</code>、<code class="highlighter-rouge">#elif</code>后面跟常量整数表达式，当这个表达式值为非0值时为真，为0位假，类似于C程序中的<code class="highlighter-rouge">if-else</code>分支结构。可以应用C的关系运算符以及逻辑运算符。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#if defined(FF)
+#define SS 9999
+#elif defined(_TEST_H)
+#define EE 99
+#endif
+</span></code></pre></div></div>
+<h4 id="预定义宏">预定义宏</h4>
+<p>一些常见的预定义宏：</p>
+
+<p>| 宏 | 意义 |
+| :—:|:—:|
+|__DATE__| 进行预处理操作的日期字符串 |
+|__FILE__| 当前源代码文件名的字符串|
+|__LINE__| 当前所在代买行号|
+|__TIME__| 源文件编译时间 |
+|__STDC_VERSION__ | 当前编译器遵循的C标准版本，当为C99时值为<code class="highlighter-rouge">199901L</code> |</p>
+<h4 id="line和error"><code class="highlighter-rouge">#line</code>和<code class="highlighter-rouge">#error</code></h4>
+<p><code class="highlighter-rouge">#line</code>指令用于重置由<code class="highlighter-rouge">__LINE__</code>和<code class="highlighter-rouge">__FILE__</code>宏报告的行号和文件名。
+使用方法：</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#line 100 //当前行号重置为100
+#line 10 "test.c" //把行号重置为10，文件名重置为test.c
+</span></code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">printf</span><span class="p">(</span><span class="s">"%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">__LINE__</span><span class="p">);</span>
+<span class="cp">#line 1000
+</span><span class="n">printf</span><span class="p">(</span><span class="s">"%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">__LINE__</span><span class="p">);</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">"%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">__LINE__</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">#error</code>指令使预处理器发出一条错误消息，该消息包含指令中的文本。可能的话，编译过程应该中断。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#if __STDC_VERSION__ != 199901L
+#error Not C99
+#endif
+</span></code></pre></div></div>
+
+<h2 id="内联函数">内联函数</h2>
+<p>内联函数主要是为了把解决函数调用过程中建立调用、传递参数、跳转到函数代码段返回耗费的时间较长的问题。它适用于较短代码块，创建内联函数需要用到<code class="highlighter-rouge">inline</code>关键字。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">inline</span> <span class="kt">double</span> <span class="nf">square</span><span class="p">(</span><span class="kt">double</span> <span class="n">x</span><span class="p">);</span>
+<span class="kt">double</span> <span class="nf">square</span><span class="p">(</span><span class="kt">double</span> <span class="n">x</span><span class="p">){</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kt">double</span> <span class="n">a</span> <span class="o">=</span> <span class="n">square</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"%lf</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">a</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="c1">//内联函数这里其实把函数体直接写到了main里面，不用调用了。</span>
+<span class="cm">/*
+ *int main(){
+ *	double a = a * a;
+ *	printf("%lf\n",a);
+ *}
+ */</span>
+</code></pre></div></div>
+<p>无法获取内联函数的地址，因为内联函数并没有被分配单独的空间。内联函数适用于短小函数，长的函数调用造成的时间远远小于函数体执行时间，使用内联函数并没什么意义。
+内联函数的定义和对该函数的调用必须在同一文件中。因此，内联函数一般具有内部链接。在多文件程序中，要想使用相同的内联函数，必须在每个文件中对内联函数进行定义。为了方便，可以把内联函数的定义放在头文件中。</p>
+
+
+</article>
+<div id="info-bottom">
+<hr>
+<p>标签: <block class="tag"><a href="/archive/#c">c</a></block><block class="tag"><a href="/archive/#C Primer Plus">C Primer Plus</a></block></p>
+<p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
+<p><b>聊天</b>请在 <a href="https://gitter.im/foreverlms/community">foreverlms</a> </p>
+</div>
+
+</div>
+<div class="info-bottom"><div class="info-bottom-text">
+License <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a> | Subscribe <a href="/feed.xml">RSS</a> | Email <a href="mailto:codechaser@163.com">codechaser@163.com</a> | 博客模板 <a href="https://fzheng.me/" target="_blank">无求备斋笔记</a>
+</div></div> 
+</div>
+</body>
+<script src="https://use.typekit.net/hvv6ahj.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+</html>

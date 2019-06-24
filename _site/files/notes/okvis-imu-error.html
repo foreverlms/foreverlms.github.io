@@ -1,0 +1,197 @@
+	<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>OKVIS ImuError</title>
+	<meta name="description" content="寒鸥惊起一双双">
+	<meta name="keywords" content="寒鸥惊起一双双" />
+	<link rel="canonical" href="http://localhost:4000/files/notes/okvis-imu-error.html">
+	<link rel="alternate" type="application/rss+xml" title="寒鸥惊起一双双" href="http://localhost:4000/feed.xml" />
+   	<link rel="stylesheet" type="text/css" href="/css/index.css">
+</head>
+
+<body>
+<div class="body-wrapper">
+<div class="nav-header">
+<a href="/">寒鸥惊起一双双</a> | <a href="https://github.com/foreverlms" target="_blank">Github</a> |<a href="/about">关于 </a></div>
+<div class="main-body">
+<header>
+<h2>OKVIS ImuError</h2>
+<p><i>2018-03-28</i> • ZHENG, Fan {fzheng@link.cuhk.edu.hk}</p>
+</header>
+<article>
+<blockquote>
+  <p>Must pre-read: <a href="https://blog.csdn.net/fuxingyin/article/details/53449209">OKVIS IMU Error</a> by Xingyin Fu</p>
+</blockquote>
+
+<h2 id="states">States</h2>
+
+<p>According to the two papers:</p>
+
+<ul>
+  <li>
+    <p>Preintegration: $[p, R, v, b_g, b_a]$</p>
+  </li>
+  <li>
+    <p>OKVIS: $[p, R, {}_S v, b_g, b_a]$.</p>
+  </li>
+</ul>
+
+<p>This leads to different measurement model:</p>
+
+<ul>
+  <li>Preintegration:</li>
+</ul>
+
+<script type="math/tex; mode=display">\tilde{a} = C^T (\dot{v}-g)+b_a+\eta_a</script>
+
+<ul>
+  <li>OKVIS:</li>
+</ul>
+
+<script type="math/tex; mode=display">\tilde{a} = C^T (\omega\times{}_Sv + C{}_S\dot{v} -g)+b_a+\eta_a</script>
+
+<p>The OKVIS version is more troublesome.</p>
+
+<p><strong>However</strong>, in OKVIS code, they still use the same $v$ as Preintegration.</p>
+
+<p>The actual propogation:</p>
+
+<script type="math/tex; mode=display">v_1 = v_0 + C_{0} \sum_k C_{0:k} (\tilde{a}_{k} - b_a) \Delta t_k - g \Delta t</script>
+
+<p>Note, the vector $g$ in OKVIS code is of the <strong>opposite sign</strong> of that in Preintegration.
+In OKVIS, $g=[0,0,9.8]$.
+In contrast, in Preintegration,
+${}_Wg=[0,0,-9.8]$, which is more physically accurate.
+Imagine that in still state, the measured ${}_W\tilde{a}$ should be $-{}_Wg$.</p>
+
+<p>Never mind, we only need to ensure the computation correctness in the implementation.</p>
+
+<p>The actually used measurement model in OKVIS code:</p>
+
+<script type="math/tex; mode=display">\tilde{a} = C^T (\dot{v}+g)+b_a+\eta_a</script>
+
+<p>In still state, the IMU gives measurement of $[0, 0, 9.8]$; and when $a=[0,0,-9.8]$ the measurement is $0$.
+This equation is correct.</p>
+
+<h2 id="se3-update">SE3 Update</h2>
+
+<p>Preintegration: $p \leftarrow p+C\delta p$.</p>
+
+<p>OKVIS: $p \leftarrow p+\delta p$</p>
+
+<p>Therefore,</p>
+
+<script type="math/tex; mode=display">\delta p_{\rm pre} = C^T \delta p_{\rm okvis}</script>
+
+<p>Preintegration with right perturbation: $C \leftarrow C\, {\rm Exp}(\delta \alpha)$</p>
+
+<p>OKVIS with left perturbation: $C \leftarrow {\rm Exp}(\delta \alpha) C$</p>
+
+<script type="math/tex; mode=display">{\rm Exp}(\delta \alpha_{\rm pre}) = C^T{\rm Exp}(\delta \alpha_{\rm okvis}) C</script>
+
+<script type="math/tex; mode=display">\delta \alpha_{\rm pre} = C^T\delta \alpha_{\rm okvis}</script>
+
+<p>Different forms of state incrementing would lead to different Jacobians.</p>
+
+<h2 id="jacobians">Jacobians</h2>
+
+<p>Calculate some intermiate variables:</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{aligned}
+& {}_W \delta_p = t_0 - t_1 + v_0 \Delta t - 0.5 g \Delta t^2 \\
+& {}_W \delta_v = v_0 - v_1 - g \Delta t\\
+& \Delta \tilde{q} = \prod q( (\tilde{w}_k - b_g) \Delta t_k ) \\
+& \Delta \tilde{q} \leftarrow \delta q( - \frac{d\alpha}{d{b_g}}\Delta {b_g}) * \Delta \tilde{q} \\
+& \int_a = \int_{a_{(0:1)}} = \sum_k C_{0:k}(\tilde{a}_{k} - b_a) \Delta t_k\\
+& \iint_a = \sum_k \int_{a_{(0:k)}} \Delta t + 0.5 C_{0:k} (\tilde{a}_k - b_a) \Delta t_k^2\\
+& \int_C = \int_{C_{(0:1)}} = \sum_k C_{0:k} \Delta t_k \\
+& \iint_C = \sum_k \int_{C_{(0:k)}} \Delta t + 0.5 C_{0:k} \Delta t_k^2\\
+\end{aligned} %]]></script>
+
+<p>Here</p>
+
+<ul>
+  <li>$\int_a$ corresponds to $\Delta \tilde{v}_{ij}$ in Preintegration;</li>
+  <li>$\iint_a$ corresponds to $\Delta \tilde{p}_{ij}$ in Preintegration.</li>
+  <li>$\int_C$ corresponds to $-\frac{\partial \Delta \bar{v}_{ij}}{\partial b_a}$ in Preintegration.</li>
+  <li>$\iint_C$ corresponds to $-\frac{\partial \Delta \bar{p}_{ij}}{\partial b_a}$ in Preintegration.</li>
+</ul>
+
+<p>Note that the calculation of $\frac{d \alpha}{db_g}$ in the code drops a minus symbol,
+so an extra minus symbol appears in $\Delta\tilde{q}$ above.
+Strange.</p>
+
+<p>Jacobians of residuals w.r.t. parameter 0:</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{aligned}
+& F_0 = I_{15} \\
+& F_{0_{(0:2,0:2)}} = C_0^{T} \\
+& F_{0_{(0:2,3:5)}} = C_0^{T}*[{}_W\delta_p]_\times \\
+& F_{0_{(0:2,6:8)}} = C_0^{T}*\Delta t \\
+& F_{0_{(0:2,9:11)}} = \frac{dp}{d{b_g}}' \\
+& F_{0_{(0:2,12:14)}} = - \iint_C \\
+& F_{0_{(3:5,3:5)}} = (Q_l(\Delta\tilde{q}*q_1^{-1})  Q_r(q_{0}))_{(0:2,0:2)} \\
+& F_{0_{(3:5,9:11)}} = (Q_r(q_1^{-1}*q_0)Q_r(\Delta\tilde{q}))_{(0:2,0:2)}*-\frac{d\alpha}{d{b_g}}' \\
+& F_{0_{(6:8,3:5)}} = C_0^{T}*{}_W\delta_v \\
+& F_{0_{(6:8,6:8)}} = C_0^{T} \\
+& F_{0_{(6:8,9:11)}} = \frac{dv}{d{b_g}} \\
+& F_{0_{(6:8,12:14)}} = -\int_C
+\end{aligned} %]]></script>
+
+<p>Jacobians of residuals w.r.t. parameter 1:</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{aligned}
+& F_1 = -I_{15} \\
+& F_{1_{(0:2,0:2)}} = -C_0^T \\
+& F_{1_{(3:5,3:5)}} = -(Q_l(\Delta\tilde{q} )Q_r(q_0)Q_l(q_1^{-1}))_{(0:2,0:2)} \\
+& F_{1_{(6:8,6:8)}} = -C_0^T
+\end{aligned} %]]></script>
+
+<h2 id="residuals">Residuals</h2>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{aligned}
+&r_p = e_{(0:2)}=C_0^{T}{}_W\delta_p+\iint_a+F_{0_{(0:2,9:14)}}*\Delta b \\
+&r_R = e_{(3:5)}=2(\Delta\tilde{q}*(q_1^{-1}*q_0))_v\\
+&r_v = e_{(6:8)}=C_{0}^T*{}_W\delta_v+\int_a+F_{0_{(6:8,9:14)}}*\Delta b\\
+&r_b = e_{(9:14)}= b_0-b_1
+\end{aligned} %]]></script>
+
+<p>All residuals happend to be the inverse/negative version of those in Preintegration.
+This does not affect the optimization process, but would invert the sign of the Jacobians.</p>
+
+</article>
+<div id="info-bottom">
+<hr>
+<p>标签: </p>
+<p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
+<p><b>聊天</b>请在 <a href="https://gitter.im/fan-farm/Lobby">Gitter/fan-farm</a> </p>
+</div>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}, 
+  "HTML-CSS": {
+    availableFonts: ["STIX","TeX"],
+    preferredFont: "STIX",
+    webFont: "STIX-Web"
+  }});
+</script>
+<script type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+</div>
+<div class="info-bottom"><div class="info-bottom-text">
+License <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a> | Subscribe <a href="/feed.xml">RSS</a> | Email <a href="mailto:codechaser@163.com">codechaser@163.com</a> | 博客模板 <a href="https://fzheng.me/" target="_blank">无求备斋笔记</a>
+</div></div> 
+</div>
+</body>
+<script src="https://use.typekit.net/hvv6ahj.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+</html>

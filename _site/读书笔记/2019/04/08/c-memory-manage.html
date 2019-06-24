@@ -1,0 +1,171 @@
+	<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>C存储类、链接和内存管理之动态分配内存及类型限定词</title>
+	<meta name="description" content="C中的内存动态分配及类型限定词">
+	<meta name="keywords" content="c, C Primer Plus, 寒鸥惊起一双双" />
+	<link rel="canonical" href="http://localhost:4000/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2019/04/08/c-memory-manage.html">
+	<link rel="alternate" type="application/rss+xml" title="寒鸥惊起一双双" href="http://localhost:4000/feed.xml" />
+   	<link rel="stylesheet" type="text/css" href="/css/index.css">
+</head>
+
+<body>
+<div class="body-wrapper">
+<div class="nav-header">
+<a href="/">寒鸥惊起一双双</a> | <a href="https://github.com/foreverlms" target="_blank">Github</a> |<a href="/about">关于 </a></div>
+<div class="main-body">
+<header>
+<h2>C存储类、链接和内存管理之动态分配内存及类型限定词</h2>
+<p><i>2019-04-08</i></p>
+</header>
+<article>
+<p>C中的内存动态分配及类型限定词
+<!--more--></p>
+
+<h2 id="存储类说明符">存储类说明符</h2>
+<p>C中存储类说明符共有5个，为<code class="highlighter-rouge">auto</code> <code class="highlighter-rouge">register</code> <code class="highlighter-rouge">static</code> <code class="highlighter-rouge">extern</code> <code class="highlighter-rouge">typeddef</code>，最后一个关键字<code class="highlighter-rouge">typedef</code>与内存存储无关。
+规定：<em>不可以在一个声明中使用一个以上存储类说明符</em>。
+存储类说明符用来确定变量的存储类型。</p>
+<h2 id="存储类和函数">存储类和函数</h2>
+<p>函数的存储类有两种：</p>
+<ul>
+  <li>外部</li>
+  <li>静态</li>
+</ul>
+
+<p>在一个文件中定义的函数默认是外部的，也就是说其他文件可以调用它，只有使用<code class="highlighter-rouge">static</code>关键字修饰的函数才是函数定义所在文件所私有的函数,通常用来解决不同文件函数之间的命名冲突。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">double</span> <span class="nf">a</span><span class="p">();</span><span class="c1">//默认声明，函数a是外部的</span>
+<span class="k">extern</span> <span class="kt">int</span> <span class="nf">b</span><span class="p">();</span><span class="c1">//此处显式声明b函数是在其他文件中定义的，可以省略。主要是为了让程序更清晰，除非函数声明使用了关键字`static`，否则默认其为`extern`的</span>
+<span class="k">static</span> <span class="kt">int</span> <span class="nf">c</span><span class="p">();</span><span class="c1">//c函数只能在本文件中调用</span>
+</code></pre></div></div>
+
+<h2 id="动态分配内存">动态分配内存</h2>
+<p><code class="highlighter-rouge">malloc</code>与<code class="highlighter-rouge">free</code>函数原型存在于<code class="highlighter-rouge">stdlib.h</code>中。</p>
+<h3 id="malloc函数"><code class="highlighter-rouge">malloc</code>函数</h3>
+<p>在C中，一些数据的内存是由系统自动分配的，也允许程序主动要求分配。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">foo</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span><span class="c1">//系统自动分配内存空间用来存储一个int</span>
+<span class="kt">char</span> <span class="n">string</span><span class="p">[]</span> <span class="o">=</span> <span class="s">"I love you."</span><span class="p">;</span><span class="c1">//系统自动为数组string分配正好装下字符串的内存空间</span>
+<span class="kt">int</span> <span class="n">bar</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span><span class="c1">//要求分配10个用来存储int的内存空间</span>
+</code></pre></div></div>
+<p>还可以手动分配内存。
+<code class="highlighter-rouge">extern void * malloc(unsigned int num_bytes)</code>
+函数<code class="highlighter-rouge">malloc</code>函数接受一个参数，该餐宿用于指定需要分配的内存字节数。<code class="highlighter-rouge">malloc</code>找到可用内存中一个区块，并返回该区块内存第一个字节的地址。它的<code class="highlighter-rouge">void *</code>返回值是一个通用指针，可以转换为其他指针类型。C中不要求强制转换，但C++中要求强制转换。如果<code class="highlighter-rouge">malloc</code>找不到符合要求的可用内存，它会返回空指针。例子：</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">double</span> <span class="o">*</span><span class="n">p</span><span class="p">;</span>
+<span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="kt">double</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="mi">30</span> <span class="o">*</span> <span class="nf">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span>
+</code></pre></div></div>
+<p>例子中，分配了一块内存用于存储30个<code class="highlighter-rouge">double</code>类型数据，并将首字节地址赋值给了指针<code class="highlighter-rouge">p</code>。</p>
+<h3 id="free函数"><code class="highlighter-rouge">free</code>函数</h3>
+<p><code class="highlighter-rouge">void free(void *p)</code>
+对应每个<code class="highlighter-rouge">malloc</code>函数调用，应该有对应的<code class="highlighter-rouge">free</code>调用来进行内存释放。它的参数是之前<code class="highlighter-rouge">malloc</code>函数分配内存块第一个字节的地址。也就是说分配的内存可用时间是从<code class="highlighter-rouge">malloc</code>执行结束开始到<code class="highlighter-rouge">free</code>释放内存为止。
+例子：</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+</span>
+<span class="cm">/*
+ * test.c 编译后产生可执行文件test.exe或test.out
+ */</span>
+
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="kt">double</span> <span class="o">*</span><span class="n">p</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">max</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">number</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="n">puts</span><span class="p">(</span><span class="s">"What's the number of </span><span class="se">\"</span><span class="s">double</span><span class="se">\"</span><span class="s"> entries?"</span><span class="p">);</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">scanf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">max</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">){</span>
+<span class="c1">//        setbuf(stdin,NULL);</span>
+        <span class="n">scanf</span><span class="p">(</span><span class="s">"%*s"</span><span class="p">);</span>
+        <span class="n">puts</span><span class="p">(</span><span class="s">"Please input a integer:"</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">"max = %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">max</span><span class="p">);</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="kt">double</span> <span class="o">*</span><span class="p">)</span> <span class="n">malloc</span><span class="p">(</span><span class="n">max</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">p</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">){</span>
+        <span class="n">puts</span><span class="p">(</span><span class="s">"Memory allocation has failed. Try to Restart this program."</span><span class="p">);</span>
+        <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">puts</span><span class="p">(</span><span class="s">"Enter the values(q to quit): "</span><span class="p">);</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">max</span> <span class="o">&amp;&amp;</span> <span class="n">scanf</span><span class="p">(</span><span class="s">"%lf"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="o">++</span><span class="n">i</span><span class="p">;</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Here are the number of entries: %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">number</span> <span class="o">=</span> <span class="n">i</span><span class="p">);</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">number</span><span class="p">;</span> <span class="o">++</span><span class="n">j</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"%7.2f "</span><span class="p">,</span><span class="n">p</span><span class="p">[</span><span class="n">j</span><span class="p">]);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">j</span> <span class="o">%</span> <span class="mi">7</span> <span class="o">==</span> <span class="mi">6</span><span class="p">)</span>
+            <span class="n">putchar</span><span class="p">(</span><span class="sc">'\n'</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">%</span> <span class="mi">7</span> <span class="o">!=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">putchar</span><span class="p">(</span><span class="sc">'\n'</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"i = %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">i</span><span class="p">);</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"Done."</span><span class="p">);</span>
+    <span class="n">free</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<h3 id="calloc函数"><code class="highlighter-rouge">calloc</code>函数</h3>
+<p>与<code class="highlighter-rouge">malloc</code>类似，不同的是<code class="highlighter-rouge">calloc</code>可以指定要分配单元数目以及每个单元所需要的字节数。<code class="highlighter-rouge">calloc</code>会默认将内存块中的各个位置0。
+<code class="highlighter-rouge">calloc</code>分配的内存同样需要用<code class="highlighter-rouge">free</code>函数来释放。</p>
+<h3 id="动态分配内存的缺点">动态分配内存的缺点</h3>
+<p>动态分配内存给了程序一定的自由，但是若是忘记释放内存，那么就会造成资源的浪费（内存泄漏）。而且相对于自动变量栈式管理，动态分配内存不是紧凑的连续分配，而是在内存中找合适的区块，会造成内存碎片，拖慢速度。</p>
+<h2 id="c类型限定关键字">C类型限定关键字</h2>
+<h3 id="const定义全局常量"><code class="highlighter-rouge">const</code>定义全局常量</h3>
+<p><code class="highlighter-rouge">const</code>定义常量之前已经做了笔记，<a href="https://blog.csdn.net/m0_37196787/article/details/83687141">看这里</a>。这里我们来看它与全局常量的关系。
+<code class="highlighter-rouge">constant</code>定义全局常量有两种方式：
+第一种方法：</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//file1.c</span>
+<span class="k">const</span> <span class="kt">double</span> <span class="n">PI</span> <span class="o">=</span> <span class="mi">3</span><span class="p">.</span><span class="mi">14</span><span class="p">;</span>
+
+<span class="c1">//file2.c</span>
+<span class="k">extern</span> <span class="k">const</span> <span class="kt">double</span> <span class="n">PI</span><span class="p">;</span>
+</code></pre></div></div>
+<p>第二种：</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//constant.h中定义常量，需要`static`关键字来修饰</span>
+<span class="k">static</span> <span class="k">const</span> <span class="kt">double</span> <span class="n">PI</span> <span class="o">=</span> <span class="mi">3</span><span class="p">.</span><span class="mi">14</span><span class="p">;</span>
+
+<span class="c1">//file1.c只需include 头文件即可</span>
+<span class="cp">#include "constant.h"
+</span>
+<span class="c1">//file2.c</span>
+<span class="cp">#include "cobnstant.h"
+</span></code></pre></div></div>
+<p>第二种方法中，<code class="highlighter-rouge">file1.c</code>和<code class="highlighter-rouge">file2.c</code>文件都包含了<code class="highlighter-rouge">constant.h</code>头文件，那么这两个文件都会定义声明一个本文件私有的静态内部链接变量<code class="highlighter-rouge">PI</code>，其实是对<code class="highlighter-rouge">constant.h</code>中<code class="highlighter-rouge">PI</code>值的拷贝。为什么必须要使用<code class="highlighter-rouge">static</code>关键字呢？因为如果不使用的话同一个静态外部链接变量就要在两个文件中定义声明两次，而我们知道外部变量只允许定义声明一次，其余的都应该是引用声明，定义两次会造成标识符冲突，还不如直接加个<code class="highlighter-rouge">static</code>修饰，为每个文件分别拷贝一个<code class="highlighter-rouge">PI</code>值给他们用。</p>
+
+<h3 id="volatile关键字"><code class="highlighter-rouge">volatile</code>关键字</h3>
+<p><code class="highlighter-rouge">volatile</code>告诉编译器某个变量除了能被程序本身修改之外，还可以被超出程序之外的其他部分改变。假定，有一个变量的值记录的是时间，那么不管程序有没有在运行，运行的如何，这个变量的值肯定是要随着时间变化而变化的，那么这个变量就应该加<code class="highlighter-rouge">volatile</code>修饰来提醒编译器。再来个例子：</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">val1</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">val2</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span>
+</code></pre></div></div>
+<p>编译器注意到<code class="highlighter-rouge">x</code>变量被使用了两次而没有进行别的操作，那么他可以将<code class="highlighter-rouge">x</code>的值临时存储在寄存器中，那么当<code class="highlighter-rouge">val2</code>和<code class="highlighter-rouge">val1</code>进行赋值操作时就会变快。但是，如果<code class="highlighter-rouge">x</code>的值可能被除了程序之外的部分改变，那么就应该这样：<code class="highlighter-rouge">volatile int x = 10;</code>来告诉编译器这个变量可能会如此，那么编译器就不会做出将<code class="highlighter-rouge">x</code>值存于寄存器这样的优化。一个变量既可以是<code class="highlighter-rouge">constant</code>，也可以是<code class="highlighter-rouge">volatile</code>的，因为不能被程序改变的量为常量，但可能被硬件改变，那么就是<code class="highlighter-rouge">volatile</code>的。这与Java中的<code class="highlighter-rouge">volatile</code>关键字可不一样。</p>
+<h3 id="restrict关键字"><code class="highlighter-rouge">restrict</code>关键字</h3>
+<p><code class="highlighter-rouge">restrict</code>关键字只能用来修饰指针，表示某个数据对象的唯一访问方式就是该指针，方便编译器优化。用法：
+<code class="highlighter-rouge">int * restrict foo = (int *) malloc(10 * sizeof(int))</code>。这里表明<code class="highlighter-rouge">foo</code>这个指针是数组的唯一访问方式。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">array</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="p">{};</span>
+<span class="kt">int</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="n">array</span><span class="p">;</span>
+</code></pre></div></div>
+<p>这里就不能给<code class="highlighter-rouge">p</code>加<code class="highlighter-rouge">restrict</code>限定词，因为<code class="highlighter-rouge">array</code>这个数组可以通过<code class="highlighter-rouge">array</code>和<code class="highlighter-rouge">p</code>两种方式进行访问。</p>
+
+</article>
+<div id="info-bottom">
+<hr>
+<p>标签: <block class="tag"><a href="/archive/#c">c</a></block><block class="tag"><a href="/archive/#C Primer Plus">C Primer Plus</a></block></p>
+<p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
+<p><b>聊天</b>请在 <a href="https://gitter.im/foreverlms/community">foreverlms</a> </p>
+</div>
+
+</div>
+<div class="info-bottom"><div class="info-bottom-text">
+License <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a> | Subscribe <a href="/feed.xml">RSS</a> | Email <a href="mailto:codechaser@163.com">codechaser@163.com</a> | 博客模板 <a href="https://fzheng.me/" target="_blank">无求备斋笔记</a>
+</div></div> 
+</div>
+</body>
+<script src="https://use.typekit.net/hvv6ahj.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+</html>

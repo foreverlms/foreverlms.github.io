@@ -1,0 +1,150 @@
+	<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>C++中的基本概念之复合类型</title>
+	<meta name="description" content="C++中的复合类型">
+	<meta name="keywords" content="cpp, C++ Primer, 寒鸥惊起一双双" />
+	<link rel="canonical" href="http://localhost:4000/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2019/04/08/cpp-fundmental.html">
+	<link rel="alternate" type="application/rss+xml" title="寒鸥惊起一双双" href="http://localhost:4000/feed.xml" />
+   	<link rel="stylesheet" type="text/css" href="/css/index.css">
+</head>
+
+<body>
+<div class="body-wrapper">
+<div class="nav-header">
+<a href="/">寒鸥惊起一双双</a> | <a href="https://github.com/foreverlms" target="_blank">Github</a> |<a href="/about">关于 </a></div>
+<div class="main-body">
+<header>
+<h2>C++中的基本概念之复合类型</h2>
+<p><i>2019-04-08</i></p>
+</header>
+<article>
+<p>C++中的复合类型
+<!--more--></p>
+
+<p>复合类型是指基于其他类型定义的类型，其中有这几种：</p>
+<ul>
+  <li>数组</li>
+  <li>字符串</li>
+  <li>struct 结构</li>
+  <li>enum 枚举</li>
+  <li>union 共用体</li>
+  <li>指针</li>
+  <li>引用</li>
+</ul>
+
+<p>这里看看其中的引用和指针。</p>
+
+<h2 id="引用">引用</h2>
+<p>引用为对象齐了另外一个名字，引用类型引用另外一种类型。通过将声明符写成<code class="highlighter-rouge">&amp;d</code>的形式来定义引用类型，其中<code class="highlighter-rouge">d</code>是声明的变量名。引用不是对象。</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;iostream&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="kt">char</span> <span class="n">ch</span><span class="p">(</span><span class="mi">65</span><span class="p">);</span>
+    <span class="kt">char</span> <span class="o">*</span> <span class="n">p</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">ch</span><span class="p">;</span><span class="c1">//指针</span>
+
+    <span class="kt">char</span> <span class="o">&amp;</span><span class="n">r</span> <span class="o">=</span> <span class="n">ch</span><span class="p">;</span><span class="c1">//引用</span>
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">ch</span> <span class="o">&lt;&lt;</span> <span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="c1">//输出A</span>
+    <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="n">ch</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span><span class="c1">//ch++;</span>
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">ch</span> <span class="o">&lt;&lt;</span> <span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="c1">//输出B</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">ch</span><span class="o">+</span><span class="mi">2</span><span class="p">;</span><span class="c1">//ch+=2;</span>
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">ch</span> <span class="o">&lt;&lt;</span> <span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="c1">//输出D</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>引用的赋值时绑定变量，初始化之后引用就会和其初始绑定对象一直绑定。对引用进行操作其实就是对其绑定对象进行操作。
+<strong>引用无法解绑，初始化之后不可改变。</strong>引用一般只能绑定到对象上，不能与<code class="highlighter-rouge">字面值</code>或者某个<code class="highlighter-rouge">表达式的计算结果</code>绑定在一起。</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="o">&amp;</span><span class="n">refer</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span><span class="c1">//错误，引用类型初始值不能为字面常量</span>
+<span class="kt">double</span> <span class="n">d</span> <span class="o">=</span> <span class="mf">3.14</span><span class="p">;</span>
+<span class="kt">int</span> <span class="o">&amp;</span><span class="n">refer1</span> <span class="o">=</span> <span class="n">d</span><span class="p">;</span><span class="c1">//错误，`int`类型的引用不可绑定到`double`类型上</span>
+</code></pre></div></div>
+
+<h2 id="指针">指针</h2>
+<p>指针也是对其他对象的间接访问，类似于C里面的指针。指针与引用不同，其本身是对象，允许对指针进行赋值、拷贝；指针无需在定义时进行赋值。未被初始化的指针是一个不确定的指针。</p>
+
+<p>C++中指针定义方式与C中一致。
+引用不是对象，因此无法创建指向引用的指针。
+指针的值应该是对象的地址，值有下列四种状态：</p>
+<ol>
+  <li>指向一个对象</li>
+  <li>指向紧邻对象所占空间的下一个位置</li>
+  <li>空指针
+空指针不指向任何对象。创建一个空指针可以如下几种方式：
+    <div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="nb">nullptr</span><span class="p">;</span>
+<span class="kt">int</span> <span class="o">*</span><span class="n">pp</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="kt">int</span> <span class="o">*</span><span class="n">ppp</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</code></pre></div>    </div>
+  </li>
+  <li>无效指针</li>
+</ol>
+
+<p>后三种情况一般都会造成不可估计的后果。</p>
+
+<h2 id="const-与指针">const 与指针</h2>
+<p>之前C部分的笔记中提到了<code class="highlighter-rouge">const</code>与指针的组合，C++中基本一致。下面看一种情况：</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">char</span> <span class="n">ch</span> <span class="o">=</span> <span class="sc">'A'</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pstring</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">pstring</span> <span class="n">cstr</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">ch</span><span class="p">;</span>
+
+<span class="o">*</span><span class="n">cstr</span> <span class="o">=</span> <span class="sc">'G'</span><span class="p">;</span>
+</code></pre></div></div>
+<p>这种情况下<code class="highlighter-rouge">*cstr = 'G'</code>这个赋值合法吗？有的同学就会认为<code class="highlighter-rouge">const pstring cstr = &amp;ch;</code>的意思就是<code class="highlighter-rouge">const char *cstr = &amp;ch;</code>，因此<code class="highlighter-rouge">cstr</code>是一个指向常量的指针，通过这个指针对对象进行修改是不合法的。但是，我们知道<code class="highlighter-rouge">typedef</code>与宏定义是不一样的，它不是简单的文本替换。这里<code class="highlighter-rouge">pstring</code>其实已经是一种数据类型了，他的类型就是<strong><code class="highlighter-rouge">char *</code>，即字符指针。</strong>所以这时候用<code class="highlighter-rouge">const</code>修饰<code class="highlighter-rouge">cstr</code>这个变量，就和<code class="highlighter-rouge">const int foo = 0;</code>一样，只不过这里<code class="highlighter-rouge">int</code>换成了<code class="highlighter-rouge">pstring</code>，<code class="highlighter-rouge">const</code>所规定的常量是个指针，所以最终<code class="highlighter-rouge">cstr</code>是一个<strong>常量指针</strong>，而不是一个<strong>指向常量的指针</strong>，因此是可以通过<code class="highlighter-rouge">cstr</code>对<code class="highlighter-rouge">ch</code>的值进行修改的。反之，<code class="highlighter-rouge">const char *cstr = &amp;ch;</code>这种写法就含义不一样了。这里<code class="highlighter-rouge">const</code>修饰的基本数据类型是什么呢？是<code class="highlighter-rouge">char</code>，这里<code class="highlighter-rouge">*</code>变成了指针的声明符，所以这样写意义就是<code class="highlighter-rouge">cstr</code>是一个指向常量字符的指针。
+另外，C++中引入了<code class="highlighter-rouge">using</code>这个关键字来达到<code class="highlighter-rouge">typdef</code>的效果。上面<code class="highlighter-rouge">typedef char *pstring</code>可以改写成<code class="highlighter-rouge">using pstring = char *;</code>。</p>
+
+<h2 id="类型说明符auto">类型说明符auto</h2>
+<p>C++中<code class="highlighter-rouge">auto</code>与C中的<code class="highlighter-rouge">auto</code>关键字好像很不一样啊。C++中<code class="highlighter-rouge">auto</code>是让编译器分析表达式来确定变量的类型。<code class="highlighter-rouge">auto</code>定义的变量必须进行初始化。</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+<span class="k">auto</span> <span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="o">+</span><span class="n">b</span><span class="p">;</span><span class="c1">//这里没有直接声明c的类型，而是通过a,b相加推断出来c是int。c=20</span>
+</code></pre></div></div>
+<p><code class="highlighter-rouge">auto</code>的使用很灵活：</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+<span class="k">auto</span> <span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="o">+</span><span class="n">b</span><span class="p">;</span>
+<span class="k">auto</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">c</span><span class="p">;</span><span class="c1">//p被自动推断出为int *。</span>
+<span class="kt">int</span> <span class="o">&amp;</span><span class="n">r</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+<span class="k">auto</span> <span class="n">rr</span> <span class="o">=</span> <span class="n">r</span><span class="p">;</span><span class="c1">//rr被自动推断为int，因为r只是a的引用，a的类型才是rr的类型</span>
+<span class="k">const</span> <span class="k">auto</span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span><span class="c1">//auto推断出int，那么d的类型就成了`const int`。</span>
+</code></pre></div></div>
+<p>可以在一个<code class="highlighter-rouge">auto</code>语句中同时推断多个变量的类型，但前提条件是这些变量的类型不会冲突，即都是一个类型的。</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">auto</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span><span class="c1">//正确，a,b都是int</span>
+<span class="k">auto</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span> <span class="n">b</span> <span class="o">=</span><span class="mf">0.01</span><span class="p">;</span><span class="c1">//错误，a,b不是同一个类型</span>
+</code></pre></div></div>
+
+<h2 id="类型说明符decltype">类型说明符decltype()</h2>
+<p><code class="highlighter-rouge">auto</code>是用变量的初始化值的类型推断变量本身的类型，而<code class="highlighter-rouge">decltype()</code>则是推断出表达式的类型，但是仅仅返回类型而不使用值：</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">decltype</span><span class="p">(</span><span class="n">f</span><span class="p">())</span> <span class="n">foo</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span><span class="c1">//推断出f函数返回值类型，声明foo为该类型，并用x的值进行初始化。</span>
+<span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="k">decltype</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="n">pp</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">a</span><span class="p">;</span><span class="c1">//p是int *，pp也是</span>
+<span class="kt">int</span> <span class="o">&amp;</span><span class="n">g</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+<span class="k">decltype</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="n">r</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span><span class="c1">//g是一个引用，因此r是int &amp;类型。</span>
+<span class="k">decltype</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="n">e</span><span class="p">;</span><span class="c1">//a是int，那么e也是int，可以不进行初始化</span>
+<span class="c1">// decltype((a)) h;//这种双括号写法会导致h的类型被认为是引用，不进行初始化不合法</span>
+<span class="k">decltype</span><span class="p">((</span><span class="n">a</span><span class="p">))</span> <span class="n">h</span> <span class="o">=</span><span class="n">a</span><span class="p">;</span>
+</code></pre></div></div>
+
+</article>
+<div id="info-bottom">
+<hr>
+<p>标签: <block class="tag"><a href="/archive/#cpp">cpp</a></block><block class="tag"><a href="/archive/#C++ Primer">C++ Primer</a></block></p>
+<p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
+<p><b>聊天</b>请在 <a href="https://gitter.im/foreverlms/community">foreverlms</a> </p>
+</div>
+
+</div>
+<div class="info-bottom"><div class="info-bottom-text">
+License <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a> | Subscribe <a href="/feed.xml">RSS</a> | Email <a href="mailto:codechaser@163.com">codechaser@163.com</a> | 博客模板 <a href="https://fzheng.me/" target="_blank">无求备斋笔记</a>
+</div></div> 
+</div>
+</body>
+<script src="https://use.typekit.net/hvv6ahj.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+</html>
