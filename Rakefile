@@ -1,3 +1,4 @@
+require "html/proofer"
 task :default do
 	puts "Running CI tasks..."
 
@@ -5,6 +6,6 @@ task :default do
 	HTMLProofer.check_directory(
     "./_site",
     url_ignore: [/linkedin.com|php-fig.org|bower.io|bost.ocks.org|elementary.io/] 
-  ).run
+  	).run
 	puts "Jekyll successfully built"
 end
