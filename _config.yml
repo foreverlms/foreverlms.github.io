@@ -10,10 +10,16 @@ description: 珍惜时间
 baseurl: "" # the subpath of your site, e.g. /blog/
 url: "https://blog.bobliao.fun" # the base hostname & protocol for your site
 
-plugins: [jekyll-paginate]
+plugins: 
+  - jekyll-paginate
+  # - jekyll-feed
+  # - jekyll-sitemap
+  # - jekyll-seo-tag
+  # - jekyll-compose
+  # - jekyll-redirect-from
 
 # twitter_username: jekyllrb
-github_username:  foreverlms
+github_username: foreverlms
 # permalink: /:year/:month/:day/:title/
 
 paginate: 25
