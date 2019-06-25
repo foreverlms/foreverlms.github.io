@@ -3,7 +3,7 @@ layout: post
 title: 转载-＜编程的智慧＞_王垠
 date: 2019-04-15 19:36:04
 categories: [code]
-tags: [cs]
+tags: [转载]
 ---
 
 [出处](http://www.yinwang.org/blog-cn/2015/11/21/programming-philosophy)

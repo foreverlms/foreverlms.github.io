@@ -18,18 +18,26 @@ tags: [概率机器人, slam]
 
 在除了贝叶斯滤波的马尔科夫假设之外,若连续变量满足以下三个特性,可以认为其后验是满足高斯(Gaussian)分布的:
 
-* 状态转移概率$p({\boldsymbol x}_t|{\boldsymbol u}_t,x_{t-1})$必须是携带随机高斯噪声的参数的线性函数,即:
-$${\boldsymbol x}_t=A_t{\boldsymbol x}_{t-1}+B_t{\boldsymbol u}_t+\varepsilon_t$$
+* 状态转移概率$$p({\boldsymbol x}\_t \|{\boldsymbol u}_t,x_{t-1})$$必须是携带随机高斯噪声的参数的线性函数,即:
+
+$$ {\boldsymbol x}_t=A_t{\boldsymbol x}_{t-1}+B_t{\boldsymbol u}_t+\varepsilon_t $$
+
 式中$\varepsilon_t$是一个高斯随机变量,表示由状态转移引入的不确定性,其维数与状态向量$x$的维数相同.其均值为0,方差用$R_t$表示.上式表明状态变量与带有附加高斯噪声的状态转移成线性关系.后验表达式为:
+
 $$p(x_t|u,x_{t-1})={\rm det}{(2\pi R_t)}^{-\frac{1}{2}}{\rm exp}\{-\frac{1}{2}(x_t-A_tx_{t-1}-B_tu_t)^TR_t^{-1}(x_t-A_tx_{t-1}-B_tu_t)\}$$
+
 式中均值为$A_tx_{t-1}+B_tu_t$,方差由$R_t$给定.
 
-* 测量概率$p(z_t|x_t)$也与带有高斯噪声的自变量成线性关系:
+* 测量概率$p(z_t\|x_t)$也与带有高斯噪声的自变量成线性关系:
+
 $$z_t=C_tx_t+\delta_t$$
-$\delta_t$是均值为0,方差为$Q_t$的多变量高斯分布.$P(z_t|x_t)$由下式给出:
+
+$\delta_t$是均值为0,方差为$Q_t$的多变量高斯分布.$P(z_t\|x_t)$由下式给出:
+
 $$p(z_t|x_t)=det(2\pi Q_t)^{-\frac{1}{2}}exp\{-\frac{1}{2}(z_t-C_tx_t)^TQ_t^{-1}(z-C_tx_t\}$$
 
 * 初始置信度${\rm bel}(x_0)$必须是正态分布的.$\mu_0$表示置信度的均值,$\Sigma_0$表示方差:
+
 $${\rm bel}(x_0)=p(x_0)={\rm det}(x_0)={\rm det}(2\pi \Sigma_0)^{-\frac{1}{2}}{\rm exp}\{-\frac{1}{2}(x_0-\mu_0)^T\Sigma_0^{-1}(x_0-\mu_0)\}$$
 
 上面的三个假设保证了后验${\rm bel}(x_t)$在任何时刻t总符合高斯分布.
