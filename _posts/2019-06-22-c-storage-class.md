@@ -2,7 +2,7 @@
 layout: post
 title: C存储类、链接和内存管理之存储类(storage class)
 date: 2019-04-08 15:26:43
-categories: [读书笔记]
+categories: [笔记]
 tags: [c, C Primer Plus]
 ---
 

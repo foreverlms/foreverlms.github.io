@@ -3,7 +3,7 @@ layout: math
 title: 递归状态估计
 mathjax: true
 date: 2019-05-04 21:48:03
-categories: [读书笔记]
+categories: [笔记]
 tags: [概率机器人, slam]
 ---
 

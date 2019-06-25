@@ -2,7 +2,7 @@
 layout: post
 title: const关键字与数组、指针
 date: 2019-04-08 15:48:40
-categories: [读书笔记]
+categories: [笔记]
 tags: [c, C Primer Plus]
 ---
 

@@ -3,7 +3,7 @@ layout: math
 title: 高斯滤波--卡尔曼滤波
 mathjax: true
 date: 2019-05-26 15:31:53
-categories: [读书笔记]
+categories: [笔记]
 tags: [概率机器人, slam]
 ---
 

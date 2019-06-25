@@ -2,7 +2,7 @@
 layout: post
 title: 张国荣的时光
 date: 2019-04-09 14:35:21
-categories: [读书笔记]
+categories: [笔记]
 tags: [荐读]
 ---
 

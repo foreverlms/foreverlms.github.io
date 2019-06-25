@@ -2,7 +2,7 @@
 layout: math
 title: 机器人学中的基本概率知识
 date: 2019-04-24 22:42:15
-categories: [读书笔记]
+categories: [笔记]
 tags: [概率机器人,slam]
 ---
 

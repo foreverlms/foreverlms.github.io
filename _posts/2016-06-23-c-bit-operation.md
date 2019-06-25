@@ -2,7 +2,7 @@
 layout: post
 title: C Primer Plus--位操作
 date: 2019-04-08 15:51:42
-categories: [读书笔记]
+categories: [笔记]
 tags: [c, C Primer Plus]
 ---
 

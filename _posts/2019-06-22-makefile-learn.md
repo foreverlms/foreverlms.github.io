@@ -2,7 +2,7 @@
 layout: post
 title: Makefile初探-1
 date: 2019-04-08 16:12:13
-categories: [读书笔记]
+categories: [笔记]
 tags: [makefile]
 ---
 

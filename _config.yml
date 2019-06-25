@@ -33,4 +33,4 @@ markdown: kramdown
 # highlighter: rouge
 # highlighter: false
 
-timezone: TIMEZONE
+timezone: Asia/Shanghai
