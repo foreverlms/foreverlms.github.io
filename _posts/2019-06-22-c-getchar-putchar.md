@@ -1,7 +1,7 @@
 ---
 layout: post
 title: getchar与putchar缓冲区以及字符串数组、指针
-date: 2018-04-08 15:13:56
+date: 2018-03-06 15:13:56
 categories: [笔记]
 tags: [c, C Primer Plus]
 ---

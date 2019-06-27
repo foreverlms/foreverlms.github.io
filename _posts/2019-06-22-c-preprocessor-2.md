@@ -1,7 +1,7 @@
 ---
 layout: post
 title: C Primer Plus--C预处理器和C库(1)
-date: 2018-05-11 16:04:27
+date: 2018-04-09 16:04:27
 categories: [笔记]
 tags: [c, C Primer Plus]
 ---
