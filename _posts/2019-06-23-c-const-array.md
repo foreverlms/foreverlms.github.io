@@ -1,7 +1,7 @@
 ---
 layout: post
 title: const关键字与数组、指针
-date: 2019-04-08 15:48:40
+date: 2018-04-12 15:48:40
 categories: [笔记]
 tags: [c, C Primer Plus]
 ---

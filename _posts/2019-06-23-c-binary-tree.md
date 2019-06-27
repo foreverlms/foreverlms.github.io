@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 用C实现一棵二叉树
-date: 2019-04-08 16:08:54
+date: 2018-03-21 16:08:54
 categories: [笔记]
 tags: [c,C Primer Plus]
 ---

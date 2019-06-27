@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "通过闭包(Closure)实现\"加减乘除\""
-date: 2019-04-08 11:24:17
+date: 2018-10-13 11:24:17
 toc: true
 categories: [code]
 tags: [javascript]

@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Code-隐匿在计算机硬件背后的语言 Charles Petzold
-date: 2019-04-09 14:31:34
+date: 2017-06-09 14:31:34
 categories: [笔记]
 tags: [荐读]
 ---

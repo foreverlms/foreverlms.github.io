@@ -1,7 +1,7 @@
 ---
 layout: post
 title: C存储类、链接和内存管理之动态分配内存及类型限定词
-date: 2019-04-08 15:32:06
+date: 2018-04-08 15:32:06
 categories: [笔记]
 tags: [c, C Primer Plus]
 ---
