@@ -69,7 +69,7 @@ $$a = a_I -2\omega \times v - \dot{\omega} \times r_I - \omega \times (\omega \t
 
 #### IMU误差模型
 
-IMU误差有随机误差和确定误差两种。确定性误差可包括偏差(bias)、缩放比(scale)、温度引起的误差、运行次数引起的误差等，这些可以通过标定去修正；随机误差假定为符合高斯分布，有高斯白噪声(white noise)、偏差随机游走(bias random walk)等，这些可以通过Allan方差标定法标定。
+IMU误差有随机误差和确定误差两种。确定性误差可包括偏差(bias)、缩放比(scale)、温度引起的误差、运行次数引起的误差等，这些可以通过标定去修正；随机误差假定为复合高斯分布，有高斯白噪声(white noise)、偏差随机游走(bias random walk)等，这些可以通过Allan方差标定法标定。
 
 * 六面法标定确定性误差
 * Allan方差法
@@ -89,6 +89,6 @@ $$
 
 离散化数据处理主要是如何通过上个时刻的imu测量值积分得到下一时刻的机器人位姿。常用的有中值积分，欧拉积分等。
 
-本周作业主要是IMU数据仿真：
+本周作业一个是IMU数据仿真：
 
 <center><object data="/files/vio/2week/hm.pdf" width="700" height="1500" type='application/pdf'></object></center>
