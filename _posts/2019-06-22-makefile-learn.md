@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Makefile初探-1
-date: 2018-09-07 16:12:13
+date: 2018-04-01 16:12:13
 categories: [笔记]
 tags: [makefile]
 ---
@@ -9,11 +9,9 @@ tags: [makefile]
 makefile的基本概念
 <!--more-->
 
-<center><iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=555059498&auto=1&height=66"></iframe>
-
-makefile是在编译中大型程序中使用的自动化编译工具`make`依赖的指令文件。这样可以使得程序的编译更加便捷快速。
+makefile是在编译中大型程序中使用的自动化编译工具 `make` 依赖的指令文件。这样可以使得程序的编译更加便捷快速。
 makefile的一般规则如下：
-```
+```makefile
 target ... : prerequisites ...
 command
 ```

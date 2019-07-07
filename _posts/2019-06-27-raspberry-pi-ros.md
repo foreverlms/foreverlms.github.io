@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 从零开始学树莓派和ROS
-date: 2017-02-27 15:28:24 +0800
+date: 2017-04-09 15:28:24 +0800
 categories: 
 tags: 
 ---
@@ -27,8 +27,9 @@ tags:
 登入路由器界面（在浏览器输入`192.168.0.1`或者`192.168.1.1`），路由器密码你肯定知道，不然你咋上网的？然后在DHCP中找到***raspberrypi***这台主机，记下IP地址。然后自己的电脑要连上无线或这个路由器，打开输入刚刚知道的IP，确定，然后会让您输入login密码，树莓派默认的用户为`pi`，密码为`raspberry`，连输入两次，按`Enter`确认，不要以为没有什么反馈信息就有问题，因为Linux的哲学是**“没有消息就是最好的消息”**,然后你就会进入树莓派的图形界面了。按`Ctrl+Alt+T`组合键进入Terminal，输入以下命令
 
 ```
-	sudo apt-get update
-	#sudo apt-get upgrade 这行可以暂时不输入
-	sudo apt-get install xrdp
+sudo apt-get update
+#sudo apt-get upgrade 这行可以暂时不输入
+sudo apt-get install xrdp
 ```
 好了之后可以断开Putty连接，打开Wndows自带的远程连接服务就可以输入IP连接树莓派了（这样你可以在任意接入此网段的windows系统上登录树莓派，不需要Putty)
+
