@@ -3,7 +3,7 @@ layout: post
 title: 用Python实现自己下载音乐的统计
 date: 2017-03-05 15:23:44 +0800
 categories: [code]
-tags: [python]
+tags: [Python]
 ---
 
 今天看Python实例，学习了如何对文件进行操作，突然想把自己网易云音乐下载到本地的歌曲名单写到一个txt中，看看具体情况。当然，我现在肯定无法做到直接去网易云音乐上爬取，就做个最简单的吧，嘻嘻^-^。

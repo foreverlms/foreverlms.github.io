@@ -52,7 +52,7 @@ $$
 
 怎么找到这个下降方向呢？最速下降法取:
 $$
-\mathrm{\mathbf{d}}=-\frac{\mathrm{\mathbf{J}}^T}{\| \mathrm{\mathbf{J}} \|_2}
+\mathrm{\mathbf{d}}=\frac{\mathrm{\mathbf{J}}^T}{\| \mathrm{\mathbf{J}} \|_2}
 $$
 
 即步长方向与一阶导（梯度）的方向相反来保证是在往下走,步长$\alpha$再另取。牛顿法更进一步，对$F(x+\Delta x)$对$\Delta x$求导来使得导数为0，解出$\Delta x$：
