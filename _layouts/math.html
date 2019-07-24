@@ -19,8 +19,20 @@ layout: default
   "HTML-CSS": {
     availableFonts: ["STIX","TeX"],
     preferredFont: "STIX",
-    webFont: "STIX-Web"
+    webFont: "STIX-Web",
+    scale: 90
   }});
+</script>
+
+<script>
+MathJax.Hub.Queue(function () {
+  var math = document.getElementById("rescale");
+  var w = math.offsetWidth, W = math.parentNode.offsetWidth-40;
+  if (w > W) {
+    math.style.fontSize = (90*W/w)+"%";
+    MathJax.Hub.getAllJax(math)[0].Rerender();
+  }
+});
 </script>
 <!-- <script type="text/javascript"
     src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
