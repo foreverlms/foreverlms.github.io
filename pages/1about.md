@@ -22,25 +22,10 @@ permalink: /about/
 
 * __Maosheng Liao__, Di Wang, Hao Yang. _Deploy Indoor 2D Laser SLAM on a Raspberry Pi-based Mobile Robot_.International Conference on Intelligent Human-Machine Systems and Cybernetics (IHMSC), 2019
 
-<!-- ### 工作经历
+### 实习经历
 
-2019-     | 研发经理, __未来机器人（深圳）__
-2015-2016 | SLAM 实习生, __未来机器人（深圳）__
-2013 | 去毛刺机器人开发实习生，__阿特拉斯・科普柯（无锡）__
-
-
-### 教学
-
-2015/2016	|  MAEG 5755 Robotics 助教
-2014/2015   |  MAEG 4050 Modern Control and Theory 助教
-2014/2015   |  MAEG 3010 Mechanics of Materials 助教
-
-### 荣誉
-
-2014	| Hong Kong PhD Fellowship
-2014	| 2014 RoboCup 巴西，小仿人组八强
-2013	| 2013 RoboCup 中国赛，小仿人组冠军
-2012	| 国家奖学金 -->
+2016.10-2017.03 | IT Intern, __Ecloab（上海）__
+2018.12-2019.03 | 激光感知实习生, __纽劢科技 Nullmax（上海）__
 
 ### 关于本站
 

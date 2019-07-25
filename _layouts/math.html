@@ -14,17 +14,36 @@ layout: default
 <p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
 <p><b>聊天</b>请在 <a href="https://gitter.im/foreverlms/community">gitter.im/foreverlmss</a> </p>
 </div>
-<script type="text/x-mathjax-config">
+
+<!-- <script type="text/x-mathjax-config">
   MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}, 
   "HTML-CSS": {
     availableFonts: ["STIX","TeX"],
     preferredFont: "STIX",
-    webFont: "STIX-Web",
-    scale: 90
+    webFont: "STIX-Web"
   }});
+</script> -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+	  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}, 
+	  "HTML-CSS":
+	  {
+	    availableFonts: ["STIX","TeX"],
+	    preferredFont: "STIX",
+	    webFont: "STIX-Web",
+	    scale: 90,
+	    minScaleAdjust: 70
+	  },
+	  CommonHTML: 
+	  {
+	    scale: 90,
+	    minScaleAdjust: 70
+	  }
+	});
 </script>
 
-<script>
+<!-- <script>
 MathJax.Hub.Queue(function () {
   var math = document.getElementById("rescale");
   var w = math.offsetWidth, W = math.parentNode.offsetWidth-40;
@@ -33,7 +52,7 @@ MathJax.Hub.Queue(function () {
     MathJax.Hub.getAllJax(math)[0].Rerender();
   }
 });
-</script>
+</script> -->
 <!-- <script type="text/javascript"
     src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 </script> -->

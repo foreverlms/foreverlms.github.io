@@ -14,14 +14,35 @@ layout: default
 <p><b>Comment</b> by <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
 <p><b>Chat</b> in <a href="https://gitter.im/foreverlms/community">gitter.im/foreverlms</a> </p>
 </div>
-<script type="text/x-mathjax-config">
+<!-- <script type="text/x-mathjax-config">
   MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}, 
   "HTML-CSS": {
     availableFonts: ["STIX","TeX"],
     preferredFont: "STIX",
     webFont: "STIX-Web"
   }});
+</script> -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+	  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}, 
+	  "HTML-CSS":
+	  {
+	    availableFonts: ["STIX","TeX"],
+	    preferredFont: "STIX",
+	    webFont: "STIX-Web",
+	    scale: 90,
+	    minScaleAdjust: 70
+	  },
+	  CommonHTML: 
+	  {
+	    scale: 90,
+	    minScaleAdjust: 70
+	  }
+	});
 </script>
-<script type="text/javascript"
+
+<!-- <script type="text/javascript"
     src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
-</script>
+</script> -->
+
+<script src="https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
