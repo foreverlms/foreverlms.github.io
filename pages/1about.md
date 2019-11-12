@@ -15,7 +15,7 @@ permalink: /about/
 
 邮箱：[codechaser@163.com](mailto:codechaser@163.com) 
 
-Aboutme：[about.me](https://about.me/bobliao)
+About me：[about.me](https://about.me/bobliao)
 
 留言或评论请使用 [Github Issues](https://github.com/foreverlms/foreverlms.github.io/Issues)。
 
