@@ -13,7 +13,7 @@ permalink: /about/
 
 “正是霜风飘断处，寒鸥惊起一双双”取自唐代陆龟蒙的《冬柳》。成双成对的是寒鸥，孤独沉默的是深秋。
 
-邮箱：[codechaser@163.com](mailto:codechaser@163.com) 
+邮箱：[codechaser囧163.com](mailto:codechaser@163.com) 
 
 About me：[about.me](https://about.me/bobliao)
 
