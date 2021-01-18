@@ -9,7 +9,7 @@ tags:
 > 记录待做的总结部分，可以视为立FLAG.
 
 - [ ] Pytorch- Tensor的基本操作
-- [ ] Pytorch- TensorIterator
+- [x] Pytorch- TensorIterator
 - [ ] Pytorch- Vectorization
 - [ ] Neon- How to get ARM Neon Intrinsics well worked?
 - [ ] *Attention is all you need* Summary
