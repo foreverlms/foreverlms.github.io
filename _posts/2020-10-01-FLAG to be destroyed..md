@@ -8,12 +8,14 @@ tags:
 
 > 记录待做的总结部分，可以视为立FLAG.
 
-- [ ] Pytorch- Tensor的基本操作
+- [x] Pytorch- Tensor的基本操作
 - [x] Pytorch- TensorIterator
-- [ ] Pytorch- Vectorization
-- [ ] Neon- How to get ARM Neon Intrinsics well worked?
-- [ ] *Attention is all you need* Summary
-- [ ] ML-CNN 入门
-- [ ] ML-RNN 入门
+- [x] Pytorch- Vectorization
+- [x] Neon- How to get ARM Neon Intrinsics well worked?
+- [x] *Attention is all you need* Summary
+- [x] ML-CNN 入门
+- [x] ML-RNN 入门
 - [ ] BERT
-- [ ] GPT-2
+- [x] GPT-2
+- [ ] MNN Source Code
+- [ ] Pytorch Source Code

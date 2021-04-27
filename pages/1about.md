@@ -15,6 +15,8 @@ permalink: /about/
 
 “正是霜风飘断处，寒鸥惊起一双双”取自唐代陆龟蒙的《冬柳》。成双成对的是寒鸥，孤独沉默的是深秋。
 
+业余足球、滑板运动爱好者，足球还有时踢，滑板现在是不敢玩了。
+
 邮箱：[codechaser囧163.com](mailto:codechaser@163.com) 
 
 About me：[about.me](https://about.me/bobliao)
@@ -22,9 +24,9 @@ About me：[about.me](https://about.me/bobliao)
 留言或评论请使用 [Github Issues](https://github.com/foreverlms/foreverlms.github.io/Issues)。
 
 ### 论文
-会议
+<!-- 会议 -->
 
-* __Maosheng Liao__, Di Wang, Hao Yang. _Deploy Indoor 2D Laser SLAM on a Raspberry Pi-based Mobile Robot_.International Conference on Intelligent Human-Machine Systems and Cybernetics (IHMSC), 2019
+<!-- * __Maosheng Liao__, Di Wang, Hao Yang. _Deploy Indoor 2D Laser SLAM on a Raspberry Pi-based Mobile Robot_.International Conference on Intelligent Human-Machine Systems and Cybernetics (IHMSC), 2019 -->
 
 ### 工作经历
 
