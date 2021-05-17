@@ -1,0 +1,671 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>寒鸥惊起一双双</title>
+    <description>珍惜时间</description>
+    <link>https://blog.bobliao.xyz/</link>
+    <atom:link href="https://blog.bobliao.xyz/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Tue, 18 May 2021 01:02:08 +0800</pubDate>
+    <lastBuildDate>Tue, 18 May 2021 01:02:08 +0800</lastBuildDate>
+    <generator>Jekyll v3.8.5</generator>
+    
+      <item>
+        <title>字节跳动春招来了</title>
+        <description>&lt;p&gt;部门+全部职位 实习/校招/社招&lt;/p&gt;
+
+&lt;p&gt;&lt;!-- more --&gt;&lt;/p&gt;
+
+&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#投递方式&quot; id=&quot;markdown-toc-投递方式&quot;&gt;投递方式&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#校招全职&quot; id=&quot;markdown-toc-校招全职&quot;&gt;校招全职&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#社招日常实习&quot; id=&quot;markdown-toc-社招日常实习&quot;&gt;社招/日常实习&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#联系方式&quot; id=&quot;markdown-toc-联系方式&quot;&gt;联系方式&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;投递方式&quot;&gt;投递方式&lt;/h2&gt;
+
+&lt;h3 id=&quot;校招全职&quot;&gt;校招全职&lt;/h3&gt;
+
+&lt;p&gt;字节跳动校招内推码: 4BVK8CY&lt;/p&gt;
+
+&lt;p&gt;投递链接：&lt;a href=&quot;https://jobs.toutiao.com/s/eRLgMsS&quot;&gt;https://jobs.toutiao.com/s/eRLgMsS&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;社招日常实习&quot;&gt;社招/日常实习&lt;/h3&gt;
+
+&lt;p&gt;投递链接：&lt;a href=&quot;https://job.toutiao.com/s/eRLbEXe&quot;&gt;https://job.toutiao.com/s/eRLbEXe&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;联系方式&quot;&gt;联系方式&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;mailto:codechaser@163.com&quot;&gt;codechaser囧163.com&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Tue, 09 Mar 2021 20:50:33 +0800</pubDate>
+        <link>https://blog.bobliao.xyz/2021/03/09/%E6%98%A5%E6%8B%9B%E6%9D%A5%E4%BA%86.html</link>
+        <guid isPermaLink="true">https://blog.bobliao.xyz/2021/03/09/%E6%98%A5%E6%8B%9B%E6%9D%A5%E4%BA%86.html</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>Pytorch-TensorIterator</title>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;TensorIterator is a helper class for element-wise operations, such as arithmetic, comparisons, and trigonometric functions. It handles broadcasting and type conversions of operands.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;一个TensorIterator的构建需要提供操作数，根据操作数的个数有一元(unary)、二元(binary)、无操作数(nullary)三种。操作数TensorOperand对参与运算的tensor进行包装，iterator内部维护两个容器inputs_和outputs_来复制操作数，进行后续操作。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Note：input操作数和output操作数可能既是输入也是输出。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;broadcast&quot;&gt;Broadcast&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Broadcasting: &lt;a href=&quot;https://numpy.org/doc/stable/user/basics.broadcasting.html#module-numpy.doc.broadcasting  https://numpy.org/devdocs/user/theory.broadcasting.html&quot;&gt;definition&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Subject to certain constraints, the smaller array is “broadcast” across the larger array so that they have compatible shapes. 
+广播操作是当两个参与运算的tensor维度或shape不一致时，要对较小size的维度进行扩张（stretch）。stretch并没有对tensor的数据进行拷贝，这也是为什么tensoriterator高效。两个操作数之间能否进行广播操作，需要通过以下条件判断：&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;每个tensor至少有一维（标量除外）&lt;/li&gt;
+    &lt;li&gt;从尾部低维开始，相应的size要么相等，要么其中一个为1，要么有一个不存在&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/blockquote&gt;
+
+&lt;h4 id=&quot;broadcastshape计算&quot;&gt;broadcastshape计算&lt;/h4&gt;
+&lt;p&gt;维度扩充需要先判断tensor间是否是可广播的，然后根据规则将相应的size扩充至另一个tensor的大小。
+维度的判断与推算主要在compute_shape中实现，这之间会对输入的操作数之间进行common shape计算（output此时并不参与common shape计算）：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;遍历操作数取公共集：
+    &lt;div class=&quot;language-cpp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;auto&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;op&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;inputs_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+ &lt;span class=&quot;n&quot;&gt;iter_block&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;auto&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;op&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;outputs_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+ &lt;span class=&quot;n&quot;&gt;iter_block&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;iter_block中首先对传入的op判断是不是输入op：&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;不是输入：将op转为output_op。接下来判断op是不是允许resize：
+    1. 不允许：判断是否同时也是输入op：
+    &lt;ol&gt;
+      &lt;li&gt;是：即为in-out一体的操作，需要判断此时的shape和最终的common shape是否一致，不一致，无法广播；&lt;/li&gt;
+      &lt;li&gt;不是：Non-resize op，此时不参与common shape计算
+        &lt;ol&gt;
+          &lt;li&gt;允许：不论是不是input，后面再根据common shape resize&lt;/li&gt;
+        &lt;/ol&gt;
+      &lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+  &lt;li&gt;是输入：首先获取当前遍历到的操作数的维度，然后进行标量、标量判断。通过all_ops_same_shape来设置标志位。在循环计算common_shape时，infer_broad_size会在确实需要扩充维度时进行计算：&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;language-cpp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kr&quot;&gt;inline&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;std&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vector&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int64_t&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;infer_broadcast_size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IntArrayRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IntArrayRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;size_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dimsA&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;size_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dimsB&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;//lms 取二者较大的维度&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;size_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ndim&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dimsA&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dimsB&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dimsA&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dimsB&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;//lms expandedSizes 每个维度对应的数目，默认为0，已经包含维度不存在的情况&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;std&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vector&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int64_t&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;expandedSizes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ndim&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// Use ptrdiff_t to ensure signed comparison.&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;ptrdiff_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;ptrdiff_t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ndim&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;--&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;//lms ptrfiff_t 有符号比较&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;ptrdiff_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;offset&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ndim&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;ptrdiff_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dimA&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dimsA&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;offset&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;ptrdiff_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dimB&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dimsB&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;offset&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;int64_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sizeA&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dimA&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dimA&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;int64_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sizeB&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dimB&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dimB&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+        &lt;span class=&quot;c1&quot;&gt;//&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;TORCH_CHECK&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;sizeA&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sizeB&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sizeA&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sizeB&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;s&quot;&gt;&quot;The size of tensor 'A':(&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sizeA&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;s&quot;&gt;&quot;) must match the size of tensor 'B':(&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sizeB&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;s&quot;&gt;&quot;) at non-singleton dimension &quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+        &lt;span class=&quot;c1&quot;&gt;// 1s map to the other size (even 0).&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;expandedSizes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sizeA&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sizeB&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sizeA&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;expandedSizes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;common_shape计算完成后，根据mutate_output_without_temp_来确定对传入的outputop的更新方式。当然，output op其他情况也被考虑到了。
+output参与到shape计算的情况：output不在inputs_列表里，但是又被用户指定为outputs_，并且无法进行resize操作，此时在计算出inputs的common shape后，要考虑output的shape。&lt;/p&gt;
+&lt;h3 id=&quot;typepromotion&quot;&gt;Typepromotion&lt;/h3&gt;
+&lt;p&gt;BroadCast Shape计算完后需要对不一致的dtype进行类型提升。同时也包括common device的计算。
+DataPromotionStrategy
+类型提升的策略/是否提升有四种：&lt;/p&gt;
+
+&lt;div class=&quot;language-cpp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;enum&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;DataPromotionStrategy&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;uint8_t&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;NONE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// Do not compute a common dtype and any check&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;CHECK&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// Compute and validate a common dtype but don't promote.&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;PROMOTE_INPUTS&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// Promote common dtype but only validate inputs (comparison ops have boolean output)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;PROMOTE&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// Promote to common dtype.&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;NONE：策略下，不对dType提升，一般适用tensor的类型相同时&lt;/li&gt;
+  &lt;li&gt;CHECK ：仅计算commontype并检查&lt;/li&gt;
+  &lt;li&gt;PROMOTE_INPUTS 进行类型提升，但只对输入的提升结果进行验证，即为保证运算，必须对输入进行类型提升，但有可能输出本来就要求类型与输入不一致，例如比较操作，输出是bool类型的。这种情况下，要求通过output op的preferred_dtype指定输出的dtype。&lt;/li&gt;
+  &lt;li&gt;PROMOTE对输入输出都进行检查并提升类型。
+    &lt;h4 id=&quot;compute-common-device&quot;&gt;Compute common device&lt;/h4&gt;
+    &lt;div class=&quot;language-cpp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;//lms 计算操作数的common device. operands为所有操作数 已第一个碰到的device为准&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;//qes&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;auto&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;op&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;operands&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;defined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;continue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n_dim&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;continue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;device&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;auto&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;op&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;operands&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;defined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;continue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;unsafeGetTensorImpl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;is_wrapped_number&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;continue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;device&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;kCPU&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;以第一个碰到的非0维op的device为准，后续可能调整。&lt;/p&gt;
+    &lt;h4 id=&quot;compute-common-dtype&quot;&gt;Compute common dtype&lt;/h4&gt;
+    &lt;ol&gt;
+      &lt;li&gt;首先进行类型检查，由于输入类型都会给出，只需要对输出的类型进行检查，如果所有tensor的数据类型一致，直接返回device和type：
+        &lt;div class=&quot;language-cpp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;missing_output_dtype&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;auto&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;out_op&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;outputs_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;out_op&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;defined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;out_op&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;preferred_dtype_&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ScalarType&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Undefined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+   &lt;span class=&quot;n&quot;&gt;missing_output_dtype&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;c1&quot;&gt;//lms 这种情况下output_type缺失&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
+        &lt;p&gt;检查标志位：need_compute_common_dtype_and_device&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;在compute_common_type_函数中遍历所有操作数，计算common_type。先判断是否all_same_type：
+        &lt;div class=&quot;language-cpp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;auto&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;common_type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ScalarType&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Undefined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;all_same_type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;auto&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;operands&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;defined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;continue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;c1&quot;&gt;//don't handle scalars&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n_dim&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+   &lt;span class=&quot;n&quot;&gt;ScalarType&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;current&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;scalar_type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+   &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;current&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ScalarType&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Undefined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+       &lt;span class=&quot;n&quot;&gt;TORCH_THROW_ERROR&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;DataType mustn't be equal to `Undefined` in `compute_common_type_`&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+       &lt;span class=&quot;n&quot;&gt;all_same_type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+       &lt;span class=&quot;k&quot;&gt;break&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+   &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+   &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;common_type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ScalarType&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Undefined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;common_type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;current&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+   &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;common_type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;current&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+       &lt;span class=&quot;c1&quot;&gt;//lms 判断操作数tensor是不是为same type&lt;/span&gt;
+       &lt;span class=&quot;n&quot;&gt;all_same_type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+       &lt;span class=&quot;k&quot;&gt;break&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+   &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+   &lt;span class=&quot;c1&quot;&gt;//lms 存在标量，all_same_type = false&lt;/span&gt;
+   &lt;span class=&quot;n&quot;&gt;all_same_type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+   &lt;span class=&quot;k&quot;&gt;break&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;all_same_type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;c1&quot;&gt;//lms 类型一样&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;std&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;make_tuple&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;device&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;common_type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
+      &lt;/li&gt;
+      &lt;li&gt;device和common_type组合成tuple，进行最后一步的检查与更正：&lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-cpp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;auto&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;op&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;operands&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;//lms 对所有操作数进行循环遍历，确定最终的state&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;state&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TORCH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;computation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;update_result_type_state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;auto&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TORCH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;computation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;result_type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;auto&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;std&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;make_tuple&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;device&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;//lms 最终的dType 肯定不能为Undefned&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;TORCH_INTERNAL_ASSERT&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ScalarType&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Undefined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;这里TypePromotion这个类比较重要，负责处理类型不同时的情况：
+TypePromotion有wrappedResult、dimResult、zeroResult三种scalar_type。wrappedResult处理tensor是由c++数据类型直接转化来的情况，dimResult处理正常tensor，zeroResult处理维度为0的情况。
+TypePromotion首先对操作数的类型进行is_wrapped_number-&amp;gt;isComplexType进行基本数据类型、复数的判断。然后根据tensor的具体情况，走wrappedResult、dimResult、zeroResult三个分支。每个分支都会走promote_skip_undefined，里面会进行查表确定类型：&lt;/p&gt;
+
+&lt;p&gt;在所有的操作数都经历过上面这个步骤后，维护的state的三个result会被联合比较取出最符合的作为result:&lt;/p&gt;
+
+&lt;div class=&quot;language-cpp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;inline&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ScalarType&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;combine_categories&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ScalarType&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;higher&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ScalarType&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;//lms&lt;/span&gt;
+    &lt;span class=&quot;cm&quot;&gt;/**
+     * 1、higher 是复数，按复数来
+     * 2、lower 不是复数，higher是float，那就按higher来
+     * 3、bool是层级最低的
+     * 4、查表确定 promoteTypes
+     *
+     */&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;isComplexType&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;higher&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;higher&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;isComplexType&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;isFloatingType&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;higher&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;higher&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;higher&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ScalarType&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Bool&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;isFloatingType&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;isComplexType&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;promote_skip_undefined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;higher&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;higher&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ScalarType&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Undefined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;higher&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;得到了common device和common type，开始真正提升了，此时promote_and_check_block会对所有的输入输出op进行检查，根据策略实行不同的操作，其中主要的是策略为promotion_strategy_ == DataPromotionStrategy::PROMOTE || promotion_strategy_ == DataPromotionStrategy::PROMOTE_INPUTS且当前tensor类型与common type不一致时，需要进行op的tensor替换：&lt;/p&gt;
+
+&lt;div class=&quot;language-cpp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;defined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;to_be_promoted&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;common_dtype_&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;scalar_type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;set_origin_tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;TensorOptions&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;scalar_type_to_type_meta&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;common_dtype_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()));&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// MemoryFormat::Contiguous will not affect origin tensor's memory_format;&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;//lms 提升之后的tensor&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;Tensor&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;promoted&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;is_output&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TORCH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;empty_like&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;MemoryFormat&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Contiguous&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;to&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;cm&quot;&gt;/*non_blocking*/&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;cm&quot;&gt;/*copy*/&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TORCH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nullopt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// Promoting&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;op&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;set_tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;promoted&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;Note: 这里都没有涉及shape的改变，因为对于inputs_，我们是不会实际改变shape。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h4 id=&quot;待粘贴&quot;&gt;待粘贴&lt;/h4&gt;
+</description>
+        <pubDate>Mon, 18 Jan 2021 22:26:28 +0800</pubDate>
+        <link>https://blog.bobliao.xyz/ml/2021/01/18/Pytorch-TensorIterator.html</link>
+        <guid isPermaLink="true">https://blog.bobliao.xyz/ml/2021/01/18/Pytorch-TensorIterator.html</guid>
+        
+        <category>Pytorch</category>
+        
+        
+        <category>ML</category>
+        
+      </item>
+    
+      <item>
+        <title>列车上的小女孩</title>
+        <description>&lt;p&gt;&lt;img src=&quot;/images/img/little_girl.jpeg&quot; alt=&quot;little_girl&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;照片里的小女孩拍摄于2016-01-16，当时的iPad mini2渣像素的噪点现在看起来让时光都带上了淡黄的光晕。&lt;/p&gt;
+
+&lt;p&gt;那时我应该是刚刚大二，放寒假回家正好赶上了春运，人生第二次坐12个小时的硬座回家，记得当时这趟列车是夜晚的车，因此硬座是相当的折磨人，让我记忆深刻。不过普快坐了几次，当时发现能够听天南地北的大爷大妈，大哥大姐们谈天说地也挺带劲儿，就是又困又累。&lt;/p&gt;
+
+&lt;p&gt;这次我记得是在靠近上海的一站，七八点的时候上来了一个年轻的小哥，怀里抱着睡着的一个小女孩，做到了我的正对面。车走了不多久，小女孩醒了，时不时靠在小哥的肩膀上东张西望，大大的眼睛一眨一眨，修剪好的刘海波波头（不知道是不是这个发型？）转来转去，看起来特别活泼可爱。&lt;/p&gt;
+
+&lt;p&gt;我的包里正好有给回家路上买的各种吃的，就递给了小女孩一个大白兔（容许我瞎说一下，因为我也不记得当时给了啥），一开始小女孩不敢要，那个小哥笑了下，说：”没事，哥哥给你好吃的，你应该说啥啊？“，这样她才接了过去，说：“谢谢哥哥”，显得懂事又俏皮。跟小哥一聊，才知道他是小女孩的舅舅，她的父母先回了老家，让他带着小姑娘回家过年。&lt;/p&gt;
+
+&lt;p&gt;列车哐当哐当走，大家都很融洽，小女孩就比较活跃了起来，光着脚丫在座位上蹦蹦跳跳。过了一会儿，小哥突然说：“唉，能不能麻烦帮我看一下她？我去上个厕所。”当时我还是蛮惊讶，毕竟火车上，让一个陌生人帮他看孩子，也不怕出什么事吗？&lt;/p&gt;
+
+&lt;p&gt;既然人家都不担心，那我也不好意思拒绝，于是小姑娘就给我抱着了，我包里的吃的那当然是少不了她一份。小哥上完厕所回来的时候，小姑娘反而不愿回去了，我又特喜欢小孩子，结果就我一直抱着逗她，他舅舅倒是心比较大慢慢睡着了。小姑娘一口一个“哥哥”的叫着，一会儿问我读几年级，一会儿问我几岁，真是让人心都化了。&lt;/p&gt;
+
+&lt;p&gt;到了十点多，车厢里没什么声音，小女孩也跟着大家一起睡着了。后来他们到站了，舅舅抱着熟睡的小姑娘下车了，我已经忘了他们是在哪一站下的车。&lt;/p&gt;
+
+&lt;p&gt;照片是在小姑娘还没睡的时候拍的，当时拍完她还亲了我一口，哈哈，感觉有点儿害羞。现在她应该也是健健康康快上五年级了吧？真诚地祝愿她的成长是快快乐乐的。&lt;/p&gt;
+
+&lt;p&gt;现在回想，为什么我会对这记忆深刻呢？我想应该是少有的在陌生的火车里被别人如此信任吧，既是那个小哥，也是这个小女孩。后来也帮别人在车站里看过行李，拿过东西，可再也没有一次像是这样让人看到照片就能想到以前。毕竟现在我们都是叔叔辈了，泪目。&lt;/p&gt;
+</description>
+        <pubDate>Mon, 16 Nov 2020 00:06:37 +0800</pubDate>
+        <link>https://blog.bobliao.xyz/2020/11/16/%E5%88%97%E8%BD%A6%E4%B8%8A%E7%9A%84%E5%B0%8F%E5%A5%B3%E5%AD%A9.html</link>
+        <guid isPermaLink="true">https://blog.bobliao.xyz/2020/11/16/%E5%88%97%E8%BD%A6%E4%B8%8A%E7%9A%84%E5%B0%8F%E5%A5%B3%E5%AD%A9.html</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>FLAGs to be destroyed.</title>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;记录待做的总结部分，可以视为立FLAG.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul class=&quot;task-list&quot;&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;Pytorch- Tensor的基本操作&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;Pytorch- TensorIterator&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;Pytorch- Vectorization&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;Neon- How to get ARM Neon Intrinsics well worked?&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;&lt;em&gt;Attention is all you need&lt;/em&gt; Summary&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;ML-CNN 入门&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;ML-RNN 入门&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; /&gt;BERT&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;GPT-2&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; /&gt;MNN Source Code&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; /&gt;Pytorch Source Code&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Thu, 01 Oct 2020 00:08:07 +0800</pubDate>
+        <link>https://blog.bobliao.xyz/2020/10/01/FLAG-to-be-destroyed/html</link>
+        <guid isPermaLink="true">https://blog.bobliao.xyz/2020/10/01/FLAG-to-be-destroyed/html</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>不信佛的人是如何被震撼的</title>
+        <description>&lt;p&gt;大师傅是真正的信佛之人
+&lt;!--more--&gt;&lt;/p&gt;
+
+&lt;p&gt;坐了这么多次火车，只有两次让我最为印象深刻。一次是大学春运回家，临座的2岁小女孩搂着我一直睡到下车，一次就是这次。车行至黄州，上来了一位穿着袈裟的女师傅坐在了我的对面，拖着个小拖车，车上绑着个黄布袋子和一个大南瓜。女师傅手里拿着身份证，看了下窗边的铭牌，说:“82，我就在这儿”，说完便弯着腰慢慢把拖车往两排座位中间挪。坐定后因为拖车会挡住别人伸脚，一直忙着说”对不起啊，挡住你们了，哈哈哈“。这位师傅容貌比较清癯，看着年纪也不小了，但是笑声确实相当爽朗，明显可以感受到笑声里的活泼气息，前后几排的乘客们都时不时扭头来看一眼。&lt;/p&gt;
+
+&lt;p&gt;这位女师傅坐定后，我对面过道边的大叔坐不住了。说起这位大叔，也是个让我开眼界的人，我坐上车之后一直看到他在用那种老式的铁夹子在剃胡须，是的，没有用什么剃须刀之类的，就纯粹用夹子，那刺啦刺啦的声音，听着就吓人。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;center&gt;未完待续&lt;/center&gt;&lt;/strong&gt;&lt;/p&gt;
+</description>
+        <pubDate>Wed, 05 Aug 2020 21:55:05 +0800</pubDate>
+        <link>https://blog.bobliao.xyz/%E9%9A%8F%E7%AC%94/2020/08/05/%E4%B8%8D%E4%BF%A1%E4%BD%9B%E7%9A%84%E4%BA%BA%E6%98%AF%E5%A6%82%E4%BD%95%E8%A2%AB%E9%9C%87%E6%92%BC%E7%9A%84.html</link>
+        <guid isPermaLink="true">https://blog.bobliao.xyz/%E9%9A%8F%E7%AC%94/2020/08/05/%E4%B8%8D%E4%BF%A1%E4%BD%9B%E7%9A%84%E4%BA%BA%E6%98%AF%E5%A6%82%E4%BD%95%E8%A2%AB%E9%9C%87%E6%92%BC%E7%9A%84.html</guid>
+        
+        
+        <category>随笔</category>
+        
+      </item>
+    
+      <item>
+        <title>我所不能了解的事</title>
+        <description>&lt;p&gt;罗大佑这首歌，好听可听
+&lt;!-- more --&gt;&lt;/p&gt;
+
+&lt;p&gt;无聊的日子总是会写点无聊的歌曲&lt;/p&gt;
+
+&lt;p&gt;无聊的天气总是会下起一点点毛毛雨&lt;/p&gt;
+
+&lt;p&gt;笼中的青鸟天天在唱着悲伤的歌曲&lt;/p&gt;
+
+&lt;p&gt;谁说她不懂神秘的爱情善变的道理&lt;/p&gt;
+
+&lt;p&gt;一阵一阵地飘来是秋天恼人的雨&lt;/p&gt;
+
+&lt;p&gt;西风将也追来像是个老规矩&lt;/p&gt;
+
+&lt;p&gt;给我一个不变的爱情不朽的温情&lt;/p&gt;
+
+&lt;p&gt;这样的事情到底我想不想&lt;/p&gt;
+
+&lt;p&gt;丢一个铜板轻轻地盖着猜猜她爱我不爱&lt;/p&gt;
+
+&lt;p&gt;那是我所不能了解的事&lt;/p&gt;
+
+&lt;p&gt;荒谬的世界总也会有点荒谬的乐趣&lt;/p&gt;
+
+&lt;p&gt;荒谬的天气总也会下点小小的及时雨&lt;/p&gt;
+
+&lt;p&gt;天空中一群群飞来的雁儿成群又飞过去&lt;/p&gt;
+
+&lt;p&gt;神秘的翅膀展开了像是梦幻的气息&lt;/p&gt;
+
+&lt;p&gt;一阵一阵地飘来是秋天恼人的雨&lt;/p&gt;
+
+&lt;p&gt;如此潇洒的幻想会不会来不及&lt;/p&gt;
+
+&lt;p&gt;砍去我那万能的双手给我一对翅膀&lt;/p&gt;
+
+&lt;p&gt;这样的事情到底我想不想&lt;/p&gt;
+
+&lt;p&gt;摊开我双手问问我自己到底是怎么回事&lt;/p&gt;
+
+&lt;p&gt;那是我所不能了解的事&lt;/p&gt;
+
+&lt;p&gt;陌生的人们会向你说点甜言蜜语&lt;/p&gt;
+
+&lt;p&gt;微笑的面孔掩盖了一层未知的暴风雨&lt;/p&gt;
+
+&lt;p&gt;墙上的镜子讥笑我如此幼稚的心理&lt;/p&gt;
+
+&lt;p&gt;熟悉的面孔隐藏了最难了解的自己&lt;/p&gt;
+
+&lt;p&gt;一阵一阵地飘来是秋天恼人的雨&lt;/p&gt;
+
+&lt;p&gt;刷掉多少我青春时期抱紧的真理&lt;/p&gt;
+
+&lt;p&gt;如果没有缤纷的色彩只有分明一片黑白&lt;/p&gt;
+
+&lt;p&gt;这样的事情他应该不应该&lt;/p&gt;
+
+&lt;p&gt;拿一枝铅笔画一个真理那是个什么样的字&lt;/p&gt;
+
+&lt;p&gt;那是我所不能了解的事&lt;/p&gt;
+</description>
+        <pubDate>Mon, 24 Feb 2020 18:03:13 +0800</pubDate>
+        <link>https://blog.bobliao.xyz/%E9%9A%8F%E7%AC%94/2020/02/24/%E6%88%91%E6%89%80%E4%B8%8D%E8%83%BD%E4%BA%86%E8%A7%A3%E7%9A%84%E4%BA%8B.html</link>
+        <guid isPermaLink="true">https://blog.bobliao.xyz/%E9%9A%8F%E7%AC%94/2020/02/24/%E6%88%91%E6%89%80%E4%B8%8D%E8%83%BD%E4%BA%86%E8%A7%A3%E7%9A%84%E4%BA%8B.html</guid>
+        
+        
+        <category>随笔</category>
+        
+      </item>
+    
+      <item>
+        <title>从一篇中医论文说起</title>
+        <description>&lt;!--more--&gt;
+
+&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#参考文献&quot; id=&quot;markdown-toc-参考文献&quot;&gt;参考文献&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;在高中的时候，我因为胃不舒服，去看过几次医生。很不幸的是，我一开始是去中医院看的。为什么我印象深刻呢？因为当时那位中医大夫，仅仅问了下症状，看了下舌苔，就给我开了一大堆中药，一小袋一小袋的装着，每次要好几袋一起冲服，味道极苦，喝了一个星期，吃饭都没味道，当然这是后话。坚持喝了一段时间，发现病症竟然加重了，本来只是下午上课的时候容易肚子饿，不管中午吃了多少，一到下午就非常饿的那种，喝了之后加上了半夜胃痛…最后实在忍不住了，去了中心医院看消化内科，医生让做了个胃镜，诊断为食管胃酸反流，开了点药，嘱咐我平时饮食清淡、按时。吃了一个多星期，症状明显好转，坚持按时吃饭，之后几乎再没有出现胃部难受的情况。从此我就再也不相信中医了。&lt;/p&gt;
+
+&lt;p&gt;最近，在知网上看到了一篇关于新冠肺炎的中医论文，作者为中国中医科学院中医基础理论研究所的杨威研究员，论文题目为《基于五运六气理论的新型肺炎防治分析与探讨》[1]。按照作者的摘要，这篇文章主要是基于五运六气和往年气运格局中国疫病情况对比来分析武汉疫情。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;新型冠状病毒（2019-nCoV）感染的肺炎属时令疫病范畴， 2019 年 12 月至 2020 年 1 月主体处于己亥年终之气，少阳相火内蕴，复被寒气阻遏，脾胃功能偏弱，适逢武汉本季气温偏高、湿度较大而诱发本病，为寒热错杂、脾虚湿困证之时令疫病。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;论文摘要给出了新冠肺炎疫情爆发的原因：己亥年终之气为本因，气候温度引发。文章首先给出基于“五运六气”构建的天人气化指导的疫病时空理论模型：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;天人气化是中医对多维时空秩序与平衡的纲领描述和一贯追求，可谓大道至简。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;在天人气化指导下，五运六气理论的疫病预测方法是通过五运主岁的太过不及、六气司天在泉及主客气变迁、运气加临以及胜复、郁发等格局推演，结合气候、物候、藏象、病候的特征描述，做出自然应时之气、非时之气盛衰及其对人体脏腑之气影响的相应推断，形成有关疫病流行趋势、证候特点、防治原则的推论，进而求证于实际气候、物候、脉象、症状表现及辨证论治的符合情况以修正完善，趋利避害、纠偏补虚，降低疫病发生与流行&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;原谅我，这一大串之乎者也我实在是没搞懂意思，可能这就是隔行如隔山吧。接着文章强调：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;综合分析众多自然、生命、疾病规律，积极地调动有利因素、协力抵御不利因素，追求扶“正祛邪”，扶助正气抵御邪气、调动机体自我调控机制。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;看起来确实给出了方法来防控疫病：&lt;strong&gt;扶正祛邪&lt;/strong&gt;。那么如何做到呢？文章给出了四条原则：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;评估利弊、探求关键&lt;/li&gt;
+  &lt;li&gt;单因多用、制约平衡&lt;/li&gt;
+  &lt;li&gt;固本祛邪、消减损害&lt;/li&gt;
+  &lt;li&gt;时移气转、干预前移&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;嗯，给出的建议都有着八字小标题，有口号的味道了，但是仍然没把怎么具体做说明白。&lt;/p&gt;
+
+&lt;p&gt;作者做了相当多的图来佐证“五运六气”理论，但目前来看，都是简单地通过统计天气情况来往理论上靠：&lt;/p&gt;
+
+&lt;p style=&quot;text-align:center&quot;&gt;&lt;img src=&quot;/images/20200214/1.PNG&quot; alt=&quot;图&quot; /&gt;&lt;/p&gt;
+
+&lt;p style=&quot;text-align:center&quot;&gt;&lt;img src=&quot;/images/20200214/2.PNG&quot; alt=&quot;图&quot; /&gt;&lt;/p&gt;
+
+&lt;p style=&quot;text-align:center&quot;&gt;&lt;img src=&quot;/images/20200214/3.PNG&quot; alt=&quot;图&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;用药部分，作者给出了中药使用建议：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;针对外寒内郁、寒热错杂者，宜用柴胡剂，如小柴胡颗粒、正柴胡饮冲剂等间断小剂量预防；外感初起者柴胡剂酌配清解外感类，如莲花清瘟、金花清感、感冒清热冲剂等，小剂轻服即止； 年老体弱及危重者酌配生脉饮口服液扶正，脾胃虚弱者配健脾消食成药以助运化。宜适度清散郁火，脾胃需当谨养，温补不可冒进。
+病情进展加重者，根据体质及病情辨证论治， 外祛风寒，内清郁热，提振枢机，养顾心阳。 用药因人而异，分期而设， 重视柴胡枢转气机，重视透热转气。忌用苦寒泻利，以免重伤脾胃、困扼正气； 忌用药食过分温补，谨防食复之祸， 反助相火肆虐。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;唉，感觉中医的用药完全是全凭古书上不知真假的理论来乱猜。后面我就完全看不下去了，一个是这论文绕来绕去，掺杂文言文，实在是读的费力。&lt;/p&gt;
+
+&lt;p&gt;对于这样的论文，有几点疑问：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;既然按照“五运六气”，疫病的本因和外因和病毒并无关系，为何文章仍然不时提醒气候助长病毒，民众需要做好隔离？需知病毒、隔离是现代医学才有的概念。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;论文最重要的是给出一个结论，语言应当精准。然而这篇文章整个给人的感觉都是模棱两可，仿佛如果事件这样发展符合这个理论，那样发展也符合理论。合着怎么说都有道理。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;根据五运六气理论，武汉最近的气候情况助长了疫病，然而全国的气候都不一致，国外的气候更是不同，为何也会有疫病传播呢？&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;论文预测拐点为&lt;strong&gt;2020 年 1 月 25 日春节至 2 月 4 日立春&lt;/strong&gt; 前后，然而现在都已经2月15了，拐点仍然不见出现。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;文章引用的参考文献里有15篇都是杨威本人为作者的论文，是不是太多了？&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;中医作为传统医学，可能确实在改善体质方面有用。但是需要知道的是现在控制住疫情的是现代医学。中医借着这件事大发论文实在是过分，难道作者平时出门敢不戴口罩？&lt;/p&gt;
+
+&lt;p&gt;PS:果然隔行如隔山，这篇论文给我看晕了。&lt;/p&gt;
+
+&lt;h2 id=&quot;参考文献&quot;&gt;参考文献&lt;/h2&gt;
+
+&lt;font size=&quot;2&quot;&gt;[1].基于五运六气理论的新型肺炎防治分析与探讨&lt;a href=&quot;http://kns.cnki.net/kcms/detail/11.3554.r.20200207.0849.002.html&quot; target=&quot;_blank&quot;&gt;$\nearrow$&lt;/a&gt;&lt;/font&gt;
+</description>
+        <pubDate>Fri, 14 Feb 2020 18:03:13 +0800</pubDate>
+        <link>https://blog.bobliao.xyz/%E9%9A%8F%E7%AC%94/2020/02/14/%E4%BB%8E%E4%B8%80%E7%AF%87%E4%B8%AD%E5%8C%BB%E8%AE%BA%E6%96%87%E8%AF%B4%E8%B5%B7.html</link>
+        <guid isPermaLink="true">https://blog.bobliao.xyz/%E9%9A%8F%E7%AC%94/2020/02/14/%E4%BB%8E%E4%B8%80%E7%AF%87%E4%B8%AD%E5%8C%BB%E8%AE%BA%E6%96%87%E8%AF%B4%E8%B5%B7.html</guid>
+        
+        
+        <category>随笔</category>
+        
+      </item>
+    
+      <item>
+        <title>姥家的记忆</title>
+        <description>&lt;p&gt;把温暖放口袋
+&lt;!--more--&gt;&lt;/p&gt;
+
+
+&lt;!-- &lt;center&gt;
+&lt;iframe frameborder=&quot;no&quot; border=&quot;0&quot; marginwidth=&quot;0&quot; marginheight=&quot;0&quot; width=330 height=86 src=&quot;//music.163.com/outchain/player?type=2&amp;id=1371939273&amp;auto=1&amp;height=66&quot;&gt;&lt;/iframe&gt;
+&lt;/center&gt; --&gt;
+
+&lt;p&gt;因为疫情的缘故，这次有时间去姥爷家看看他。&lt;/p&gt;
+
+&lt;p&gt;我们这儿属于丘陵地带，背靠葱葱郁郁的太行山脉，出门就能看见的各种小的、大的山。它们给经济的发展带了很大的困难，但也带来了百分之七十六的森林覆盖率，周围环境长年绿意盎然。姥爷的家就在大山里，在以前得翻山越岭过去，现在得益于国家扶贫，水泥路直接修到了家门口，来去方便很多（纵使诸多令人诟病之处，但政府对于扶贫确实做的不错）。然而即便来去方便，像姥爷所在的山村已经走在了凋亡的路上：中青一代都渐渐搬出去，剩下的都是自愿留在村里的老人。人少了，就极其安静，白天偶尔会传来鸡鸣狗叫，夜晚睡觉则万籁俱寂，全然没有都市夜生活的嘈杂纷乱。&lt;/p&gt;
+
+&lt;p&gt;姥爷将近七十岁了，但身子骨还很硬朗，就是大腿那一块总是有点儿静脉曲张，让他别平时出去做农活，但就是不听。春天他会在自己的田、地里种些花生、油菜之类的东西，等到六七月份夏天来临，就得顶着烈日去把花生这些从地里扯起来，甩掉土，一粒粒摘下来装袋。秋天，没有什么干的，他就会到山上给林场什么的帮帮忙，到了冬天，四下皆寒，养几只兔子，或卖或送。他喜欢抽旱烟，就是用烟斗的那种。每隔半年，他就得抽出一天去镇上买烟丝，一买就是好几斤。坐在门口把烟丝添上、点上，大吸一口再一吐就一大片烟雾。就我个人而言，旱烟的二手烟远比香烟的二手烟好闻，不是那么的刺激，小时候我就喜欢在姥爷吐出的烟雾里蹦来蹦去，趁着他不注意，把烟斗拿着到处敲敲打打，好不威风。现在，姥爷渐渐老去，用了十几年的烟斗也磨去了尖尖的棱角，而我再也不能像以前那样蹦蹦跳跳。姥爷早就把我当大人看了，不知道从什么时候开始，他会像我请教一些事怎么做，也会问我喝不喝酒，抽不抽烟。&lt;/p&gt;
+
+&lt;p&gt;说道大人，就得说说成了大人的无趣。山水之间，其乐无穷。村里的小溪以前有块巨大的青石，因为溪水多年的冲刷，渐渐形成了一个水泊。人们在溪里放了五块方石供人过河，又在水泊旁加了块青石板，方便洗菜、洗衣服。在我儿时的记忆里，那时村里的人都还没搬出去，这条溪就是村里最热闹的地方。孩童们在水洼里戏水，妇女们带着棒槌在青石上洗衣，不时让顽童们别把水搅浑了。上一个人洗完，过一会儿就会有下一个人继续过来洗，棒槌敲打衣服发出梆梆的声音，就着水汽袅袅的传了出去。这条小溪，在夏天的时候是消暑的绝佳去处，但仍比不上我们小时候待过的无名小潭。&lt;/p&gt;
+
+&lt;p&gt;这个小潭，不像柳宗元笔下的小石潭，也就没有那种空灵，但它仍让我记忆深刻。那时候去姥姥家，我和舅舅们家的孩子年龄相差不大，只有姨哥大我们五六岁，因此放牛的任务一般就是他负责。说到牛，现在可能很多人对这种动物没有感情。要说十几年前农村什么动物最精贵，那必须是牛。牛，耕田要用它，耕地要用它，什么都离不开它。牛的性格温顺，往往只会到处吃草，人畜无害；牛又吃苦耐劳，鞍绳一套，就能去干农活。吃的是草，输出的却是整个家庭的产出。因此，让牛吃饱吃好是重要的任务。夏天放牛，若是没有遮荫的地方，那滋味属实不太好受；而山上树多，找个草地一躺，牛绳一扔由它自己吃草就可。一到放牛的时候，姨哥牵着牛绳，来个小弟坐上牛背，一大群人就往山上跑。那个小潭就在半山腰，溪水从一个小悬崖上流落到潭里，水特别清凉。几个人把衣服一脱，光溜溜的全冲了进去，别提有多舒服。虽然舒服，但是风险蛮大。记得有次我们玩的太尽兴，姥姥喊回家吃饭都没人听到，姥姥就拿根极细的小竹条，摸上山来。我们之中年龄大的两个反应比较快，蹭蹭地顺着岩壁爬走了，剩下我们几个小的被姥姥拿着竹条狠抽了一顿，中午吃饭都不太香了。现在回想起来，都是温暖的回忆。可惜，高中的时候姥姥离开了人世，我再也不可能见到她。听妈妈说，弥留之际，姥姥仍然念着我，想着我，我永远怀念她。&lt;/p&gt;
+
+&lt;p&gt;而如今，青石水泊被水泥糊了起来做成了一个小型水坝，用来给旁边修建的水井蓄水。那个小潭因为溪水的断流，现在已是杂草丛生，不复从前的淙淙水声。村子也快空了，没有孩童到处嬉闹，没有水汽蒸腾下的袅袅浣衣声，没有儿时夏夜躺在凉席上遥看星河的玩伴。长辈老了，我们年龄大了，时间向前走，从来不等人。&lt;/p&gt;
+</description>
+        <pubDate>Wed, 12 Feb 2020 16:03:13 +0800</pubDate>
+        <link>https://blog.bobliao.xyz/%E9%9A%8F%E7%AC%94/2020/02/12/%E5%A7%A5%E5%AE%B6%E7%9A%84%E8%AE%B0%E5%BF%86.html</link>
+        <guid isPermaLink="true">https://blog.bobliao.xyz/%E9%9A%8F%E7%AC%94/2020/02/12/%E5%A7%A5%E5%AE%B6%E7%9A%84%E8%AE%B0%E5%BF%86.html</guid>
+        
+        
+        <category>随笔</category>
+        
+      </item>
+    
+      <item>
+        <title>重读鲁迅先生</title>
+        <description>&lt;p&gt;民族魂
+&lt;!--more--&gt;&lt;/p&gt;
+
+&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#-热风随感录四十一&quot; id=&quot;markdown-toc--热风随感录四十一&quot;&gt;&lt;center&gt; 热风·随感录四十一&lt;/center&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;闲来无事，翻翻高中的书。其中一本鲁迅先生全集里的《热风·随感录四十一》曾被我摘抄，现如今在读，仍觉得振聋发聩。现实的种种乱象，都像是往日的种种复刻。&lt;/p&gt;
+
+&lt;h2 id=&quot;-热风随感录四十一&quot;&gt;&lt;center&gt; 热风·随感录四十一&lt;/center&gt;&lt;/h2&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;从一封匿名信里看见一句话，是“数麻石片”(原注江苏方言)，大约是没有本领便不必提倡改革，不如去数石片的好的意思。因此又记起了本志通信栏内所载四川方言的“洗煤炭”。想来别省方言中，相类的话还多；守着这专劝人自暴自弃的格言的人，也怕并不少。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;凡中国人说一句话，做一件事，倘与传来的积习有若干抵触，须一个斤斗便告成功，才有立足的处所；而且被恭维得烙铁一般热。否则免不了标新立异的罪名，不许说话；或者竟成了大逆不道，为天地所不容。这一种人，从前本可以夷到九族，连累邻居；现在却不过是几封匿名信罢了。但意志略略薄弱的人便不免因此萎缩，不知不觉的也入了“数麻石片”党。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;所以现在的中国，社会上毫无改革，学术上没有发明，美术上也没有创作；至于多人继续的研究，前仆后继的探险，那更不必提了。国人的事业，大抵是专谋时式的成功的经营，以及对于一切的冷笑。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;但冷笑的人，虽然反对改革，却又未必有保守的能力：即如文字一面，白话固然看不上眼，古文也不甚提得起笔。照他的学说，本该去“数麻石片”了；他却又不然，只是莫名其妙的冷笑。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;中国的人，大抵在如此空气里成功，在如此空气里萎缩腐败，以至老死。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;我想，人猿同源的学说，大约可以毫无疑义了。但我不懂，何以从前的古猴子，不都努力变人，却到现在还留着子孙，变把戏给人看。还是那时竟没有一匹想站起来学说人话呢?还是虽然有了几匹，却终被猴子社会攻击他标新立异，都咬死了；所以终于不能进化呢?&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;尼采式的超人，虽然太觉渺茫，但就世界观有人种的事实看来，却可以确信将来总有尤为高尚尤近圆满的人类出现。到那时候，类人猿上面，怕要添出“类猿人”这一个名词。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;所以我时常害怕，愿中国青年都摆脱冷气，只是向上走，不必听自暴自弃者流的话。能做事的做事，能发声的发声。有一分热，发一分光，就令萤火一般，也可以在黑暗里发一点光，不必等候炬火。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;此后如竟没有炬火：我便是唯一的光。倘若有了炬火，出了太阳，我们自然心悦诚服的消失。不但毫无不平，而且还要随喜赞美这炬火或太阳；因为他照了人类，连我都在内。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;我又愿中国青年都只是向上走，不必理会这冷笑和暗箭。尼采说：“真的，人是一个浊流。应该是海了，能容这浊流使他干净。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“咄，我教你们超人：这便是海，在他这里，能容下你们的大侮蔑。”(《札拉图如是说》的《序言》第三节) 
+　　 
+纵令不过一洼浅水，也可以学学大海；横坚都是水，可以相通。几粒石子，任他们暗地里掷来；几滴秽水，任他们从背后泼来就是了。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;这还算不到“大侮蔑”——因为大侮蔑也须有胆力。&lt;/p&gt;
+&lt;/blockquote&gt;
+</description>
+        <pubDate>Mon, 10 Feb 2020 16:03:13 +0800</pubDate>
+        <link>https://blog.bobliao.xyz/%E9%9A%8F%E7%AC%94/2020/02/10/%E9%87%8D%E8%AF%BB%E9%B2%81%E8%BF%85%E5%85%88%E7%94%9F.html</link>
+        <guid isPermaLink="true">https://blog.bobliao.xyz/%E9%9A%8F%E7%AC%94/2020/02/10/%E9%87%8D%E8%AF%BB%E9%B2%81%E8%BF%85%E5%85%88%E7%94%9F.html</guid>
+        
+        
+        <category>随笔</category>
+        
+      </item>
+    
+      <item>
+        <title>从怀旧到理想生活</title>
+        <description>
+&lt;p&gt;怀旧，可以有多种表现方式。总是想着过去的一个人，喜欢老式的歌曲，珍惜从前用过的东西…然而我在虎扑这个直男论坛上竟然被一个怀旧的博主深深震撼了。&lt;/p&gt;
+
+&lt;p&gt;这位大哥的id叫做“大恶”，在2019-12-26号发了个&lt;a href=&quot;https://bbs.hupu.com/31487880.html?is_reflow=1&quot;&gt;帖子&lt;/a&gt;，标题为：&lt;strong&gt;十二年没有换手机了，谁可一战？&lt;/strong&gt; 其实一开始看到这个标题，我觉得是标题党，点进去之后才发现这位老哥真的是从十二年前开始用的诺基亚E61I，一直到最近实在修不好了才准备换。看着楼主发出来手机镜头从清晰到模糊，宛如十年前2G网的逛论坛截屏，实在是震撼不已。&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;虽说手机早就是苹果和安卓的天下了，换个新手机在经济上倒也算不上特别巨大的压力，但我这个人可能接受新事物的能力比较差，觉得手机用惯了没必要换，对陪伴自己这么多年的东西多少也有些感情。现代的智能手机确实功能强大，但貌似多数都可以用电脑来替代，就拿微信举例吧，我是两年前因为管理公众号必须要用微信，所以就注册了一个，在电脑上用安卓模拟器就可以使用微信了。之前还为扫码的问题费了好大劲，曾经用过笔记本摄像头+镜子扫描笔记本的屏幕的笨办法，直到我发现了虚拟摄像头这一神器。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这位大哥能够这样坚持，我是极其佩服的，在很多人迷惘的时代，他知道自己需要什么，真的是非常难得。&lt;/p&gt;
+
+&lt;p&gt;此时我想到了我以前看过的一个帖子，意思是说自己的一条毛巾用了十几年，心想这两位老哥真是棋逢对手了。结果评论一看，竟然是同一个人！！论怀旧和专一，没人能比得上了吧？&lt;/p&gt;
+
+&lt;p&gt;抱着感慨的心态，私信了老哥一波，才了解到原来老哥是北医毕业，在医院干了很多年，想要追求work life balance，然后去了中国政法大学当校医…最关键的是，这位老哥业余还是一位程！序！员！卧槽，这简直是我的理想人生：学业开挂-&amp;gt;财务自由-&amp;gt;生活闲散-&amp;gt;身体健康-&amp;gt;个人爱好。&lt;/p&gt;
+
+&lt;p&gt;老哥现在四十多了，仍然喜欢运动，自己做了几款关于足球和篮球的游戏，本迷弟厚着脸皮要了他的微信公众号来玩一玩，属于数据类培养游戏，属实不错！最近疫情爆发，老哥还给中国政法的师生们开发了导诊服务，真的是业务+兴趣双精通！工科男的典范！&lt;/p&gt;
+
+&lt;p&gt;追求真我，这位老哥做到了。RESPECT!&lt;/p&gt;
+</description>
+        <pubDate>Sat, 08 Feb 2020 16:03:13 +0800</pubDate>
+        <link>https://blog.bobliao.xyz/%E9%9A%8F%E7%AC%94/2020/02/08/%E8%B0%88%E8%B0%88%E6%80%80%E6%97%A7.html</link>
+        <guid isPermaLink="true">https://blog.bobliao.xyz/%E9%9A%8F%E7%AC%94/2020/02/08/%E8%B0%88%E8%B0%88%E6%80%80%E6%97%A7.html</guid>
+        
+        
+        <category>随笔</category>
+        
+      </item>
+    
+  </channel>
+</rss>

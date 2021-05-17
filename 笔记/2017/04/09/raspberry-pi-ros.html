@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>从零开始学树莓派和ROS</title>
+	<meta name="description" content="从零开始学树莓派和ROS今天写下自己的第一篇博客，记录一下自己的学习历程和学习过程中碰到的各种小问题，供同道者参阅和自己以后回顾用 ，水平不高，我就放开手写吧，反正也不会有人看。我现在在做毕业设计，是与树莓派3 B型及ROS有关，也在开始学习Python（小白一枚，但是真的觉得Python充满了简洁美），所以我写...">
+	<meta name="keywords" content="ros, 寒鸥惊起一双双" />
+	<link rel="canonical" href="https://blog.bobliao.xyz/%E7%AC%94%E8%AE%B0/2017/04/09/raspberry-pi-ros.html">
+	<link rel="alternate" type="application/rss+xml" title="寒鸥惊起一双双" href="https://blog.bobliao.xyz/feed.xml" />
+   	<link rel="stylesheet" type="text/css" href="/css/index.css">
+</head>
+
+<body>
+<div class="body-wrapper">
+<div class="nav-header">
+<a href="/">寒鸥惊起一双双</a> | <a href="https://github.com/foreverlms" target="_blank">Github</a> |<a href="/about"> 关于我 </a></div>
+<div class="main-body">
+<header>
+<h2>从零开始学树莓派和ROS</h2>
+<p><i>2017-04-09</i></p>
+</header>
+<article>
+<h1 id="从零开始学树莓派和ros">从零开始学树莓派和ROS</h1>
+<p>今天写下自己的第一篇博客，记录一下自己的学习历程和学习过程中碰到的各种小问题，供同道者参阅和自己以后回顾用 ，水平不高，我就放开手写吧，反正也不会有人看。
+我现在在做毕业设计，是与树莓派3 B型及ROS有关，也在开始学习Python（小白一枚，但是真的觉得Python充满了简洁美），所以我写的可能会很杂，希望一年后的自己再来看博客可不要觉得现在的自己那么浅薄。^-^
+关于ROS的部分，我相信你肯定会喜欢它的官方网站的，<a href="http://wiki.ros.org/cn/ROS/Tutorials">wiki中文网站</a>是很不错的学习手册，我目前就在看这个网站。
+好了，进入正题，先开始最基本的部分吧。今天是2017年04月09日，做个纪念！</p>
+
+<hr />
+
+<h2 id="树莓派系统的安装">树莓派系统的安装</h2>
+<p>树莓派用的是Linux系统，在raspberrypi<a href="https://www.raspberrypi.org/">官网</a>可以直接下载树莓派的系统镜像。你可以选择树莓派基金会开发的noobs工具进行安装，也可以下载raspbian系统镜像自己烧写进sd卡中进行安装。过程很简单，只需用到SDFormatter和Win32DiskImager这两款软件和一张容量大于4G的sd卡就行了，具体过程我就不细说了，相当简单，写入SD卡后插进树莓派直接启动就会自动安装了，几分钟就能搞定。ps：树莓派很耐玩，如果你系统有问题，完全可以重新装系统，一般SD卡那容量也放不了多少重要的东西。</p>
+<h2 id="ssh连接">SSH连接</h2>
+<p>树莓派系统装好了，接好电源，然后怎么操作可能咱都一脸懵逼！！！那么我来写一下自己参照网上说的两种操作方式吧：</p>
+<h3 id="把树莓派当个电脑用">把树莓派当个电脑用</h3>
+<p>你可以买个外接的<strong>HDMI LCD</strong>小显示屏、键盘、鼠标接上树莓派的接口就可以直接像平时一样玩Linux了，不需要网络什么的，但是这样不推荐，因为树莓派3自带Wifi模块，咱完全可以将树莓派零外设，充分发挥树莓派体积小的特点，这就看第二招了。</p>
+<h3 id="利用ssh连接软件">利用SSH连接软件</h3>
+<p>这招要求必须有台路由器和一根网线（不用路由器只有一根网线也行，但那太折腾）
+首先将路由器设置到可以连接Internet（其实只要能组成局域网就行，但后面要更新Linux，最好还是联网），然后网线连接路由器Lan端口和树莓派上面的网络接口，启动树莓派。
+登入路由器界面（在浏览器输入<code class="highlighter-rouge">192.168.0.1</code>或者<code class="highlighter-rouge">192.168.1.1</code>），路由器密码你肯定知道，不然你咋上网的？然后在DHCP中找到<strong><em>raspberrypi</em></strong>这台主机，记下IP地址。然后自己的电脑要连上无线或这个路由器，打开输入刚刚知道的IP，确定，然后会让您输入login密码，树莓派默认的用户为<code class="highlighter-rouge">pi</code>，密码为<code class="highlighter-rouge">raspberry</code>，连输入两次，按<code class="highlighter-rouge">Enter</code>确认，不要以为没有什么反馈信息就有问题，因为Linux的哲学是<strong>“没有消息就是最好的消息”</strong>,然后你就会进入树莓派的图形界面了。按<code class="highlighter-rouge">Ctrl+Alt+T</code>组合键进入Terminal，输入以下命令</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo apt-get update
+#sudo apt-get upgrade 这行可以暂时不输入
+sudo apt-get install xrdp
+</code></pre></div></div>
+<p>好了之后可以断开Putty连接，打开Wndows自带的远程连接服务就可以输入IP连接树莓派了（这样你可以在任意接入此网段的windows系统上登录树莓派，不需要Putty)</p>
+
+
+</article>
+<div id="info-bottom">
+<hr>
+<p>标签: <block class="tag"><a href="/archive/#ros">ros</a></block></p>
+<p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
+<p><b>聊天</b>请在 <a href="https://gitter.im/foreverlms/community" target="_blank">gitter.im/foreverlms</a> </p>
+</div>
+
+</div>
+<div class="info-bottom"><div class="info-bottom-text">
+License <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a> | Subscribe <a href="/feed.xml">RSS</a> | Email <a href="mailto:codechaser@163.com">codechaser囧163.com</a> | 博客模板 <a href="https://fzheng.me/" target="_blank">无求备斋笔记</a>
+</div></div> 
+</div>
+</body>
+<script src="https://use.typekit.net/hvv6ahj.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+</html>

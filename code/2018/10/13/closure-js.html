@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>通过闭包(Closure)实现"加减乘除"</title>
+	<meta name="description" content="通过闭包实现函数执行次数上的加减乘除">
+	<meta name="keywords" content="javascript, 寒鸥惊起一双双" />
+	<link rel="canonical" href="https://blog.bobliao.xyz/code/2018/10/13/closure-js.html">
+	<link rel="alternate" type="application/rss+xml" title="寒鸥惊起一双双" href="https://blog.bobliao.xyz/feed.xml" />
+   	<link rel="stylesheet" type="text/css" href="/css/index.css">
+</head>
+
+<body>
+<div class="body-wrapper">
+<div class="nav-header">
+<a href="/">寒鸥惊起一双双</a> | <a href="https://github.com/foreverlms" target="_blank">Github</a> |<a href="/about"> 关于我 </a></div>
+<div class="main-body">
+<header>
+<h2>通过闭包(Closure)实现"加减乘除"</h2>
+<p><i>2018-10-13</i></p>
+</header>
+<article>
+<p>通过闭包实现函数执行次数上的加减乘除
+<!--more--></p>
+
+<h2 id="闭包closure">闭包(Closure)</h2>
+
+<p>今天在网上随便逛的时候看到了python里的闭包概念，搜了一下，结果不小心尽到了javascript里的闭包…我看了一下，二者理念是一致的，都是涉及到两点：</p>
+<ul>
+  <li>函数变量作用域</li>
+  <li>函数的返回值是一个函数</li>
+</ul>
+
+<p>具体的概念不做赘述，两篇关于闭包的文章很值得一看，分别是<a href="https://www.programiz.com/python-programming/closure">python</a>和<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures">javascript</a>，大意上就是返回的函数可以持有外层函数局部变量的引用。</p>
+
+<h2 id="闭包与加减乘除">闭包与加减乘除</h2>
+<p>我对js不熟悉，甚至都没有用过，但是看到了有关闭包的一个问题，很有意思：<strong>如何通过闭包实现某种意义上的加减乘除</strong>？这个问题很有意思，它给了0和1的定义：</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">zero</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">f</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">x</span><span class="p">){</span>
+		<span class="k">return</span> <span class="nx">x</span><span class="p">;</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">one</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">f</span><span class="p">){</span>
+	<span class="k">return</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">x</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">f</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<h3 id="加法">加法</h3>
+<p>从上面可以看出<code class="highlighter-rouge">zero</code>和<code class="highlighter-rouge">one</code>可以看出，<code class="highlighter-rouge">one</code>接收一个函数<code class="highlighter-rouge">f</code>作为参数，返回一个函数，该函数会执行f一次；<code class="highlighter-rouge">zero</code>同样，但是不会执行f。这确实是某中意义上的0与1。接着问我们：如何通过类似于<code class="highlighter-rouge">add(m,n)</code>的形式实现加法？意思就是，如果我们像<code class="highlighter-rouge">var two = add(one,one)</code>这样调用的话，<code class="highlighter-rouge">add</code>返回的<code class="highlighter-rouge">two</code>如果调用会执行<code class="highlighter-rouge">f</code>两次，相当于<code class="highlighter-rouge">one</code>+<code class="highlighter-rouge">one</code>。那么真的是这样吗？怎么实现呢？</p>
+
+<p>其实很好理解，只要在<code class="highlighter-rouge">add(m,n)</code>里面保证<code class="highlighter-rouge">m</code>与<code class="highlighter-rouge">n</code>都可以接收到<code class="highlighter-rouge">f</code>，然后分别调用其返回的函数不就可以了吗？相当于先执行了<code class="highlighter-rouge">m</code>次<code class="highlighter-rouge">f</code>，再执行<code class="highlighter-rouge">n</code>次<code class="highlighter-rouge">f</code>。来看看怎么实现：</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">add</span><span class="p">(</span><span class="nx">n</span><span class="p">,</span><span class="nx">m</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">f</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">x</span><span class="p">){</span>
+			<span class="k">return</span> <span class="nx">m</span><span class="p">(</span><span class="nx">f</span><span class="p">)(</span><span class="nx">n</span><span class="p">(</span><span class="nx">f</span><span class="p">)(</span><span class="nx">x</span><span class="p">));</span><span class="c1">//先执行n次，再执行m次</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>那么我们来测试一下：</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">two</span> <span class="o">=</span> <span class="nx">add</span><span class="p">(</span><span class="nx">one</span><span class="p">,</span><span class="nx">one</span><span class="p">);</span>
+<span class="c1">//执行2=1+1两次，也就是加法</span>
+<span class="p">(</span><span class="nx">two</span><span class="p">(</span><span class="kd">function</span> <span class="p">(){</span>
+	<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">print 2 times</span><span class="dl">'</span><span class="p">);</span>
+<span class="p">}))();</span>
+</code></pre></div></div>
+<p>确实打印出了两次<code class="highlighter-rouge">print 2 times</code>。</p>
+
+<h3 id="减法">减法</h3>
+
+<p>减法可以利用栈来实现。我们定义一个数组，先执行<code class="highlighter-rouge">m</code>次的push，再执行<code class="highlighter-rouge">n</code>次的pop，那么剩下的就是他们的差应该执行的次数。</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">sub</span><span class="p">(</span><span class="nx">m</span><span class="p">,</span><span class="nx">n</span><span class="p">){</span>
+	<span class="k">return</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">f</span><span class="p">){</span>
+		<span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">x</span><span class="p">){</span>
+			<span class="kd">var</span> <span class="nx">stack</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Array</span><span class="p">();</span>
+
+			<span class="kd">var</span> <span class="nx">push_func</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+				<span class="nx">stack</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="kd">function</span> <span class="p">(){</span>
+					<span class="nx">f</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+				<span class="p">})</span>
+			<span class="p">}</span>
+
+			<span class="kd">var</span> <span class="nx">pop_func</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+				<span class="nx">stack</span><span class="p">.</span><span class="nx">pop</span><span class="p">();</span>
+			<span class="p">}</span>
+
+			<span class="nx">m</span><span class="p">(</span><span class="nx">push_func</span><span class="p">)();</span>
+			<span class="nx">n</span><span class="p">(</span><span class="nx">pop_func</span><span class="p">)();</span>
+
+			<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="nx">i</span><span class="o">&lt;</span><span class="nx">stack</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span><span class="nx">i</span><span class="o">++</span><span class="p">){</span>
+				<span class="nx">stack</span><span class="p">[</span><span class="nx">i</span><span class="p">]();</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<h3 id="乘法">乘法</h3>
+
+<p>乘法可以理解为递归。即执行m次n就行了。</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">multiply</span><span class="p">(</span><span class="nx">n</span><span class="p">,</span><span class="nx">m</span><span class="p">){</span>
+	<span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">f</span><span class="p">){</span>
+		<span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">x</span><span class="p">){</span>
+			<span class="c1">//y是一个函数，他会执行n(f)(z)</span>
+			<span class="kd">var</span> <span class="nx">y</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">z</span><span class="p">){</span>
+				<span class="k">return</span> <span class="nx">n</span><span class="p">(</span><span class="nx">f</span><span class="p">)(</span><span class="nx">z</span><span class="p">);</span>
+			<span class="p">}</span>
+
+			<span class="c1">//这里y其实相当于f,接收参数x,x转为形参z</span>
+			<span class="k">return</span> <span class="nx">m</span><span class="p">(</span><span class="nx">y</span><span class="p">)(</span><span class="nx">x</span><span class="p">);</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="除法">除法</h3>
+
+<p>除法也需要用到栈。但是这时候相对于减法来说需要三个栈，原理就是除法可以看成每次弹出<code class="highlighter-rouge">n</code>，没弹出一次，那么就说明<code class="highlighter-rouge">m</code>减去了一个<code class="highlighter-rouge">n</code>。当弹出到<code class="highlighter-rouge">m</code>数目比<code class="highlighter-rouge">n</code>还小时，也就剩下了余数，结束。弹出次数就是商。具体请看代码实现：</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">div</span><span class="p">(</span><span class="nx">m</span><span class="p">,</span><span class="nx">n</span><span class="p">){</span>
+	<span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">f</span><span class="p">){</span>
+		<span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">x</span><span class="p">){</span>
+			<span class="kd">var</span> <span class="nx">stack_m</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Array</span><span class="p">();</span>
+			<span class="kd">var</span> <span class="nx">stack_n</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Array</span><span class="p">();</span>
+			<span class="kd">var</span> <span class="nx">stack</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Array</span><span class="p">();</span>
+
+			<span class="nx">m</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+				<span class="nx">stack_m</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="dl">'</span><span class="s1">hi</span><span class="dl">'</span><span class="p">);</span>
+			<span class="p">})();</span>
+			<span class="nx">n</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+				<span class="nx">stack_n</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="dl">'</span><span class="s1">hi</span><span class="dl">'</span><span class="p">);</span>
+			<span class="p">})();</span>
+
+			<span class="k">while</span><span class="p">(</span><span class="nx">stack_m</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;=</span> <span class="nx">stack_n</span><span class="p">.</span><span class="nx">length</span><span class="p">){</span>
+				<span class="nx">stack_m</span><span class="p">.</span><span class="nx">splice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nx">stack_n</span><span class="p">.</span><span class="nx">length</span><span class="p">);</span>
+				<span class="nx">stack</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">f</span><span class="p">);</span>
+			<span class="p">}</span>
+
+
+			<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="nx">i</span><span class="o">&lt;</span><span class="nx">stack</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span><span class="nx">i</span><span class="o">++</span><span class="p">){</span>
+				<span class="nx">stack</span><span class="p">[</span><span class="nx">i</span><span class="p">](</span><span class="nx">x</span><span class="p">);</span>
+			<span class="p">}</span>
+
+
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="测试及完全代码">测试及完全代码</h3>
+
+<p>完全代码：</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">zero</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">f</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">x</span><span class="p">){</span>
+		<span class="k">return</span> <span class="nx">x</span><span class="p">;</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="p">(</span><span class="nx">zero</span><span class="p">(</span><span class="kd">function</span> <span class="p">(){</span>
+	<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">print 0 times</span><span class="dl">'</span><span class="p">);</span><span class="c1">//不会执行</span>
+<span class="p">}))();</span>
+
+<span class="kd">var</span> <span class="nx">one</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">f</span><span class="p">){</span>
+	<span class="k">return</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">x</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">f</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">//执行一次</span>
+<span class="p">(</span><span class="nx">one</span><span class="p">(</span><span class="kd">function</span> <span class="p">(){</span>
+	<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">print 1 times</span><span class="dl">'</span><span class="p">);</span>
+<span class="p">}))();</span>
+
+<span class="c1">//加法</span>
+<span class="kd">function</span> <span class="nx">add</span><span class="p">(</span><span class="nx">n</span><span class="p">,</span><span class="nx">m</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">f</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">x</span><span class="p">){</span>
+			<span class="k">return</span> <span class="nx">m</span><span class="p">(</span><span class="nx">f</span><span class="p">)(</span><span class="nx">n</span><span class="p">(</span><span class="nx">f</span><span class="p">)(</span><span class="nx">x</span><span class="p">));</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">two</span> <span class="o">=</span> <span class="nx">add</span><span class="p">(</span><span class="nx">one</span><span class="p">,</span><span class="nx">one</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">three</span> <span class="o">=</span> <span class="nx">add</span><span class="p">(</span><span class="nx">one</span><span class="p">,</span><span class="nx">two</span><span class="p">);</span>
+
+<span class="c1">//执行2=1+1两次，也就是加法</span>
+<span class="p">(</span><span class="nx">two</span><span class="p">(</span><span class="kd">function</span> <span class="p">(){</span>
+	<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">print 2 times</span><span class="dl">'</span><span class="p">);</span>
+<span class="p">}))();</span>
+
+<span class="c1">//乘法</span>
+<span class="kd">function</span> <span class="nx">multiply</span><span class="p">(</span><span class="nx">n</span><span class="p">,</span><span class="nx">m</span><span class="p">){</span>
+	<span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">f</span><span class="p">){</span>
+		<span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">x</span><span class="p">){</span>
+			<span class="c1">//y是一个函数，他会执行n(f)(z)</span>
+			<span class="kd">var</span> <span class="nx">y</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">z</span><span class="p">){</span>
+				<span class="k">return</span> <span class="nx">n</span><span class="p">(</span><span class="nx">f</span><span class="p">)(</span><span class="nx">z</span><span class="p">);</span>
+			<span class="p">}</span>
+
+			<span class="c1">//这里y其实相当于f,接收参数x,x转为形参z</span>
+			<span class="k">return</span> <span class="nx">m</span><span class="p">(</span><span class="nx">y</span><span class="p">)(</span><span class="nx">x</span><span class="p">);</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">//减法</span>
+<span class="kd">function</span> <span class="nx">sub</span><span class="p">(</span><span class="nx">m</span><span class="p">,</span><span class="nx">n</span><span class="p">){</span>
+	<span class="k">return</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">f</span><span class="p">){</span>
+		<span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">x</span><span class="p">){</span>
+			<span class="kd">var</span> <span class="nx">stack</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Array</span><span class="p">();</span>
+
+			<span class="kd">var</span> <span class="nx">push_func</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+				<span class="nx">stack</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="kd">function</span> <span class="p">(){</span>
+					<span class="nx">f</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+				<span class="p">})</span>
+			<span class="p">}</span>
+
+			<span class="kd">var</span> <span class="nx">pop_func</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+				<span class="nx">stack</span><span class="p">.</span><span class="nx">pop</span><span class="p">();</span>
+			<span class="p">}</span>
+
+			<span class="nx">m</span><span class="p">(</span><span class="nx">push_func</span><span class="p">)();</span>
+			<span class="nx">n</span><span class="p">(</span><span class="nx">pop_func</span><span class="p">)();</span>
+
+			<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="nx">i</span><span class="o">&lt;</span><span class="nx">stack</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span><span class="nx">i</span><span class="o">++</span><span class="p">){</span>
+				<span class="nx">stack</span><span class="p">[</span><span class="nx">i</span><span class="p">]();</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">//除法</span>
+<span class="kd">function</span> <span class="nx">div</span><span class="p">(</span><span class="nx">m</span><span class="p">,</span><span class="nx">n</span><span class="p">){</span>
+	<span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">f</span><span class="p">){</span>
+		<span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">x</span><span class="p">){</span>
+			<span class="kd">var</span> <span class="nx">stack_m</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Array</span><span class="p">();</span>
+			<span class="kd">var</span> <span class="nx">stack_n</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Array</span><span class="p">();</span>
+			<span class="kd">var</span> <span class="nx">stack</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Array</span><span class="p">();</span>
+
+			<span class="nx">m</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+				<span class="nx">stack_m</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="dl">'</span><span class="s1">hi</span><span class="dl">'</span><span class="p">);</span>
+			<span class="p">})();</span>
+			<span class="nx">n</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+				<span class="nx">stack_n</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="dl">'</span><span class="s1">hi</span><span class="dl">'</span><span class="p">);</span>
+			<span class="p">})();</span>
+
+			<span class="k">while</span><span class="p">(</span><span class="nx">stack_m</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;=</span> <span class="nx">stack_n</span><span class="p">.</span><span class="nx">length</span><span class="p">){</span>
+				<span class="nx">stack_m</span><span class="p">.</span><span class="nx">splice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nx">stack_n</span><span class="p">.</span><span class="nx">length</span><span class="p">);</span>
+				<span class="nx">stack</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">f</span><span class="p">);</span>
+			<span class="p">}</span>
+
+
+			<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="nx">i</span><span class="o">&lt;</span><span class="nx">stack</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span><span class="nx">i</span><span class="o">++</span><span class="p">){</span>
+				<span class="nx">stack</span><span class="p">[</span><span class="nx">i</span><span class="p">](</span><span class="nx">x</span><span class="p">);</span>
+			<span class="p">}</span>
+
+
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+<span class="p">}</span>
+
+<span class="c1">//执行6=2*3次</span>
+<span class="kd">var</span> <span class="nx">six</span> <span class="o">=</span> <span class="nx">multiply</span><span class="p">(</span><span class="nx">two</span><span class="p">,</span><span class="nx">three</span><span class="p">);</span>
+
+<span class="p">(</span><span class="nx">six</span><span class="p">(</span><span class="kd">function</span> <span class="p">(){</span>
+	<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">print 6 times</span><span class="dl">'</span><span class="p">);</span>
+<span class="p">}))();</span>
+
+<span class="c1">//执行4=6-2次</span>
+<span class="kd">var</span> <span class="nx">four</span> <span class="o">=</span> <span class="nx">sub</span><span class="p">(</span><span class="nx">six</span><span class="p">,</span><span class="nx">two</span><span class="p">);</span>
+
+<span class="p">(</span><span class="nx">four</span><span class="p">(</span><span class="kd">function</span> <span class="p">(){</span>
+	<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">print 4 times</span><span class="dl">'</span><span class="p">);</span>
+<span class="p">}))();</span>
+
+<span class="kd">var</span> <span class="nx">ten</span> <span class="o">=</span> <span class="nx">add</span><span class="p">(</span><span class="nx">six</span><span class="p">,</span><span class="nx">four</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">five</span> <span class="o">=</span> <span class="nx">div</span><span class="p">(</span><span class="nx">ten</span><span class="p">,</span><span class="nx">two</span><span class="p">);</span>
+
+<span class="p">(</span><span class="nx">five</span><span class="p">(</span><span class="kd">function</span> <span class="p">(){</span>
+	<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">print 5 times</span><span class="dl">'</span><span class="p">);</span>
+<span class="p">}))();</span>
+</code></pre></div></div>
+
+<p>测试结果：</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>print 1 times
+print 2 times
+print 2 times
+print 6 times
+print 6 times
+print 6 times
+print 6 times
+print 6 times
+print 6 times
+print 4 times
+print 4 times
+print 4 times
+print 4 times
+print 5 times
+print 5 times
+print 5 times
+print 5 times
+print 5 times
+</code></pre></div></div>
+
+</article>
+<div id="info-bottom">
+<hr>
+<p>标签: <block class="tag"><a href="/archive/#javascript">javascript</a></block></p>
+<p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
+<p><b>聊天</b>请在 <a href="https://gitter.im/foreverlms/community" target="_blank">gitter.im/foreverlms</a> </p>
+</div>
+
+</div>
+<div class="info-bottom"><div class="info-bottom-text">
+License <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a> | Subscribe <a href="/feed.xml">RSS</a> | Email <a href="mailto:codechaser@163.com">codechaser囧163.com</a> | 博客模板 <a href="https://fzheng.me/" target="_blank">无求备斋笔记</a>
+</div></div> 
+</div>
+</body>
+<script src="https://use.typekit.net/hvv6ahj.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+</html>

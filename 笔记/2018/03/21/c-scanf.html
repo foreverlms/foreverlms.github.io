@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>C语言scanf函数返回值小记</title>
+	<meta name="description" content="scanf小记">
+	<meta name="keywords" content="c, C Primer Plus, 寒鸥惊起一双双" />
+	<link rel="canonical" href="https://blog.bobliao.xyz/%E7%AC%94%E8%AE%B0/2018/03/21/c-scanf.html">
+	<link rel="alternate" type="application/rss+xml" title="寒鸥惊起一双双" href="https://blog.bobliao.xyz/feed.xml" />
+   	<link rel="stylesheet" type="text/css" href="/css/index.css">
+</head>
+
+<body>
+<div class="body-wrapper">
+<div class="nav-header">
+<a href="/">寒鸥惊起一双双</a> | <a href="https://github.com/foreverlms" target="_blank">Github</a> |<a href="/about"> 关于我 </a></div>
+<div class="main-body">
+<header>
+<h2>C语言scanf函数返回值小记</h2>
+<p><i>2018-03-21</i></p>
+</header>
+<article>
+<p><code class="highlighter-rouge">scanf</code>小记</p>
+
+<!--more-->
+
+<h2 id="scanf">scanf</h2>
+<p><code class="highlighter-rouge">scanf</code>是C标准库<code class="highlighter-rouge">stdio</code>里面定义的用于获取用户输入的函数，具体的介绍可以在<a href="https://en.cppreference.com/w/c/io/fscanf">CppReference</a>上看到。<code class="highlighter-rouge">scanf</code>的返回值是已经成功赋值的变量个数，也就是说在
+<code class="highlighter-rouge">scanf("%d %d",&amp;a,&amp;b)</code>这个调用返回的值在用户输入<code class="highlighter-rouge">1 2</code>时返回的是2，如果用户输入的是<code class="highlighter-rouge">1 b</code>，那么返回值为1，如果输入的是<code class="highlighter-rouge">a b</code>，那么返回的是0。</p>
+
+<h2 id="问题">问题</h2>
+
+<p>刚刚用了这个例子，发现输入字母时会导致一直无限输出0：</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">){</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">scanf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">x</span><span class="p">);</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span><span class="n">x</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>仔细分析一下，就知道原因为何：</p>
+<ul>
+  <li><code class="highlighter-rouge">scanf</code>这里要求输入参数为数字，输入字母会导致赋值失败，因此<code class="highlighter-rouge">scanf</code>返回值一直为0，也就导致输出0。</li>
+  <li>至于为什么一直输出0是因为<code class="highlighter-rouge">scanf</code>对于接受失败的数据会送回<code class="highlighter-rouge">stdin</code>缓冲区，之前输入的字母会一直存在。在这个死循环中，scanf一遍遍读缓冲区的字母，也就会一直输出已一大串0。要想像输入数字那样可以循环输入，必须清除掉缓冲区的数据：<code class="highlighter-rouge">setbuf(stdin,NULL);</code>，这个语句加到scanf后面，如下所示：</li>
+</ul>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+	<span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">){</span>
+		<span class="n">x</span> <span class="o">=</span> <span class="n">scanf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">x</span><span class="p">);</span>
+		<span class="n">setbuf</span><span class="p">(</span><span class="n">stdin</span><span class="p">,</span><span class="nb">NULL</span><span class="p">);</span>
+		<span class="n">printf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span><span class="n">x</span><span class="p">);</span>
+	<span class="p">}</span>
+
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">scanf</code>与<code class="highlighter-rouge">getchar</code>函数区别很大，使用时应小心谨慎。</p>
+
+</article>
+<div id="info-bottom">
+<hr>
+<p>标签: <block class="tag"><a href="/archive/#c">c</a></block><block class="tag"><a href="/archive/#C Primer Plus">C Primer Plus</a></block></p>
+<p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
+<p><b>聊天</b>请在 <a href="https://gitter.im/foreverlms/community" target="_blank">gitter.im/foreverlms</a> </p>
+</div>
+
+</div>
+<div class="info-bottom"><div class="info-bottom-text">
+License <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a> | Subscribe <a href="/feed.xml">RSS</a> | Email <a href="mailto:codechaser@163.com">codechaser囧163.com</a> | 博客模板 <a href="https://fzheng.me/" target="_blank">无求备斋笔记</a>
+</div></div> 
+</div>
+</body>
+<script src="https://use.typekit.net/hvv6ahj.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+</html>

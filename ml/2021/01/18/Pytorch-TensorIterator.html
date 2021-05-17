@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>Pytorch-TensorIterator</title>
+	<meta name="description" content="  TensorIterator is a helper class for element-wise operations, such as arithmetic, comparisons, and trigonometric functions. It handles broadcasting and typ...">
+	<meta name="keywords" content="Pytorch, 寒鸥惊起一双双" />
+	<link rel="canonical" href="https://blog.bobliao.xyz/ml/2021/01/18/Pytorch-TensorIterator.html">
+	<link rel="alternate" type="application/rss+xml" title="寒鸥惊起一双双" href="https://blog.bobliao.xyz/feed.xml" />
+   	<link rel="stylesheet" type="text/css" href="/css/index.css">
+</head>
+
+<body>
+<div class="body-wrapper">
+<div class="nav-header">
+<a href="/">寒鸥惊起一双双</a> | <a href="https://github.com/foreverlms" target="_blank">Github</a> |<a href="/about"> 关于我 </a></div>
+<div class="main-body">
+<header>
+<h2>Pytorch-TensorIterator</h2>
+<p><i>2021-01-18</i></p>
+</header>
+<article>
+<blockquote>
+  <p>TensorIterator is a helper class for element-wise operations, such as arithmetic, comparisons, and trigonometric functions. It handles broadcasting and type conversions of operands.</p>
+</blockquote>
+
+<p>一个TensorIterator的构建需要提供操作数，根据操作数的个数有一元(unary)、二元(binary)、无操作数(nullary)三种。操作数TensorOperand对参与运算的tensor进行包装，iterator内部维护两个容器inputs_和outputs_来复制操作数，进行后续操作。</p>
+
+<blockquote>
+  <p>Note：input操作数和output操作数可能既是输入也是输出。</p>
+</blockquote>
+
+<h3 id="broadcast">Broadcast</h3>
+
+<ul>
+  <li>Broadcasting: <a href="https://numpy.org/doc/stable/user/basics.broadcasting.html#module-numpy.doc.broadcasting  https://numpy.org/devdocs/user/theory.broadcasting.html">definition</a></li>
+</ul>
+
+<blockquote>
+  <p>Subject to certain constraints, the smaller array is “broadcast” across the larger array so that they have compatible shapes. 
+广播操作是当两个参与运算的tensor维度或shape不一致时，要对较小size的维度进行扩张（stretch）。stretch并没有对tensor的数据进行拷贝，这也是为什么tensoriterator高效。两个操作数之间能否进行广播操作，需要通过以下条件判断：</p>
+  <ul>
+    <li>每个tensor至少有一维（标量除外）</li>
+    <li>从尾部低维开始，相应的size要么相等，要么其中一个为1，要么有一个不存在</li>
+  </ul>
+</blockquote>
+
+<h4 id="broadcastshape计算">broadcastshape计算</h4>
+<p>维度扩充需要先判断tensor间是否是可广播的，然后根据规则将相应的size扩充至另一个tensor的大小。
+维度的判断与推算主要在compute_shape中实现，这之间会对输入的操作数之间进行common shape计算（output此时并不参与common shape计算）：</p>
+<ol>
+  <li>遍历操作数取公共集：
+    <div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">op</span> <span class="o">:</span> <span class="n">inputs_</span><span class="p">)</span> <span class="p">{</span>
+ <span class="n">iter_block</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="nb">true</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">op</span> <span class="o">:</span> <span class="n">outputs_</span><span class="p">)</span> <span class="p">{</span>
+ <span class="n">iter_block</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="nb">false</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+    <p>iter_block中首先对传入的op判断是不是输入op：</p>
+  </li>
+  <li>不是输入：将op转为output_op。接下来判断op是不是允许resize：
+    1. 不允许：判断是否同时也是输入op：
+    <ol>
+      <li>是：即为in-out一体的操作，需要判断此时的shape和最终的common shape是否一致，不一致，无法广播；</li>
+      <li>不是：Non-resize op，此时不参与common shape计算
+        <ol>
+          <li>允许：不论是不是input，后面再根据common shape resize</li>
+        </ol>
+      </li>
+    </ol>
+  </li>
+  <li>是输入：首先获取当前遍历到的操作数的维度，然后进行标量、标量判断。通过all_ops_same_shape来设置标志位。在循环计算common_shape时，infer_broad_size会在确实需要扩充维度时进行计算：</li>
+</ol>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">inline</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int64_t</span><span class="o">&gt;</span> <span class="n">infer_broadcast_size</span><span class="p">(</span><span class="n">IntArrayRef</span> <span class="n">a</span><span class="p">,</span> <span class="n">IntArrayRef</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">size_t</span> <span class="n">dimsA</span> <span class="o">=</span> <span class="n">a</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+    <span class="kt">size_t</span> <span class="n">dimsB</span> <span class="o">=</span> <span class="n">b</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+    <span class="c1">//lms 取二者较大的维度</span>
+    <span class="kt">size_t</span> <span class="n">ndim</span> <span class="o">=</span> <span class="n">dimsA</span> <span class="o">&gt;</span> <span class="n">dimsB</span> <span class="o">?</span> <span class="n">dimsA</span> <span class="o">:</span> <span class="n">dimsB</span><span class="p">;</span>
+    <span class="c1">//lms expandedSizes 每个维度对应的数目，默认为0，已经包含维度不存在的情况</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int64_t</span><span class="o">&gt;</span> <span class="n">expandedSizes</span><span class="p">(</span><span class="n">ndim</span><span class="p">);</span>
+
+    <span class="c1">// Use ptrdiff_t to ensure signed comparison.</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">ptrdiff_t</span> <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="kt">ptrdiff_t</span><span class="p">)</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">;</span> <span class="o">--</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">//lms ptrfiff_t 有符号比较</span>
+        <span class="kt">ptrdiff_t</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">;</span>
+        <span class="kt">ptrdiff_t</span> <span class="n">dimA</span> <span class="o">=</span> <span class="n">dimsA</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">offset</span><span class="p">;</span>
+        <span class="kt">ptrdiff_t</span> <span class="n">dimB</span> <span class="o">=</span> <span class="n">dimsB</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">offset</span><span class="p">;</span>
+        <span class="kt">int64_t</span> <span class="n">sizeA</span> <span class="o">=</span> <span class="p">(</span><span class="n">dimA</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="n">a</span><span class="p">[</span><span class="n">dimA</span><span class="p">]</span> <span class="o">:</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="kt">int64_t</span> <span class="n">sizeB</span> <span class="o">=</span> <span class="p">(</span><span class="n">dimB</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="n">b</span><span class="p">[</span><span class="n">dimB</span><span class="p">]</span> <span class="o">:</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="c1">//</span>
+        <span class="n">TORCH_CHECK</span><span class="p">(</span>
+                <span class="n">sizeA</span> <span class="o">==</span> <span class="n">sizeB</span> <span class="o">||</span> <span class="n">sizeA</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">||</span> <span class="n">sizeB</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s">"The size of tensor 'A':("</span><span class="p">,</span> <span class="n">sizeA</span><span class="p">,</span>
+                <span class="s">") must match the size of tensor 'B':("</span><span class="p">,</span> <span class="n">sizeB</span><span class="p">,</span>
+                <span class="s">") at non-singleton dimension "</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+
+        <span class="c1">// 1s map to the other size (even 0).</span>
+        <span class="n">expandedSizes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">sizeA</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">?</span> <span class="n">sizeB</span> <span class="o">:</span> <span class="n">sizeA</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">expandedSizes</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>common_shape计算完成后，根据mutate_output_without_temp_来确定对传入的outputop的更新方式。当然，output op其他情况也被考虑到了。
+output参与到shape计算的情况：output不在inputs_列表里，但是又被用户指定为outputs_，并且无法进行resize操作，此时在计算出inputs的common shape后，要考虑output的shape。</p>
+<h3 id="typepromotion">Typepromotion</h3>
+<p>BroadCast Shape计算完后需要对不一致的dtype进行类型提升。同时也包括common device的计算。
+DataPromotionStrategy
+类型提升的策略/是否提升有四种：</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">enum</span> <span class="k">class</span> <span class="nc">DataPromotionStrategy</span> <span class="o">:</span> <span class="kt">uint8_t</span> <span class="p">{</span>
+    <span class="n">NONE</span><span class="p">,</span> <span class="c1">// Do not compute a common dtype and any check</span>
+    <span class="n">CHECK</span><span class="p">,</span> <span class="c1">// Compute and validate a common dtype but don't promote.</span>
+    <span class="n">PROMOTE_INPUTS</span><span class="p">,</span> <span class="c1">// Promote common dtype but only validate inputs (comparison ops have boolean output)</span>
+    <span class="n">PROMOTE</span> <span class="c1">// Promote to common dtype.</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<ul>
+  <li>NONE：策略下，不对dType提升，一般适用tensor的类型相同时</li>
+  <li>CHECK ：仅计算commontype并检查</li>
+  <li>PROMOTE_INPUTS 进行类型提升，但只对输入的提升结果进行验证，即为保证运算，必须对输入进行类型提升，但有可能输出本来就要求类型与输入不一致，例如比较操作，输出是bool类型的。这种情况下，要求通过output op的preferred_dtype指定输出的dtype。</li>
+  <li>PROMOTE对输入输出都进行检查并提升类型。
+    <h4 id="compute-common-device">Compute common device</h4>
+    <div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//lms 计算操作数的common device. operands为所有操作数 已第一个碰到的device为准</span>
+<span class="c1">//qes</span>
+<span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">op</span> <span class="o">:</span> <span class="n">operands</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">op</span><span class="o">-&gt;</span><span class="n">tensor</span><span class="p">().</span><span class="n">defined</span><span class="p">())</span> <span class="k">continue</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">op</span><span class="o">-&gt;</span><span class="n">tensor</span><span class="p">().</span><span class="n">n_dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+  <span class="k">return</span> <span class="n">op</span><span class="o">-&gt;</span><span class="n">tensor</span><span class="p">().</span><span class="n">device</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">op</span> <span class="o">:</span> <span class="n">operands</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">op</span><span class="o">-&gt;</span><span class="n">tensor</span><span class="p">().</span><span class="n">defined</span><span class="p">())</span> <span class="k">continue</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">op</span><span class="o">-&gt;</span><span class="n">tensor</span><span class="p">().</span><span class="n">unsafeGetTensorImpl</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">is_wrapped_number</span><span class="p">())</span> <span class="k">continue</span><span class="p">;</span>
+  <span class="k">return</span> <span class="n">op</span><span class="o">-&gt;</span><span class="n">tensor</span><span class="p">().</span><span class="n">device</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="k">return</span> <span class="n">kCPU</span><span class="p">;</span>
+</code></pre></div>    </div>
+    <p>以第一个碰到的非0维op的device为准，后续可能调整。</p>
+    <h4 id="compute-common-dtype">Compute common dtype</h4>
+    <ol>
+      <li>首先进行类型检查，由于输入类型都会给出，只需要对输出的类型进行检查，如果所有tensor的数据类型一致，直接返回device和type：
+        <div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">bool</span> <span class="n">missing_output_dtype</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+<span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">out_op</span> <span class="o">:</span> <span class="n">outputs_</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">out_op</span><span class="p">.</span><span class="n">defined</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">out_op</span><span class="p">.</span><span class="n">preferred_dtype_</span> <span class="o">==</span> <span class="n">ScalarType</span><span class="o">::</span><span class="n">Undefined</span><span class="p">)</span> <span class="p">{</span>
+   <span class="n">missing_output_dtype</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span><span class="c1">//lms 这种情况下output_type缺失</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>        </div>
+        <p>检查标志位：need_compute_common_dtype_and_device</p>
+      </li>
+      <li>在compute_common_type_函数中遍历所有操作数，计算common_type。先判断是否all_same_type：
+        <div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">auto</span> <span class="n">common_type</span> <span class="o">=</span> <span class="n">ScalarType</span><span class="o">::</span><span class="n">Undefined</span><span class="p">;</span>
+<span class="kt">bool</span> <span class="n">all_same_type</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+<span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">op</span><span class="o">:</span> <span class="n">operands</span><span class="p">){</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">op</span><span class="o">-&gt;</span><span class="n">defined</span><span class="p">())</span> <span class="p">{</span> <span class="k">continue</span><span class="p">;</span> <span class="p">}</span>
+  <span class="c1">//don't handle scalars</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">op</span><span class="o">-&gt;</span><span class="n">tensor</span><span class="p">().</span><span class="n">n_dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">){</span>
+   <span class="n">ScalarType</span> <span class="n">current</span> <span class="o">=</span> <span class="n">op</span><span class="o">-&gt;</span><span class="n">tensor</span><span class="p">().</span><span class="n">dtype</span><span class="p">().</span><span class="n">scalar_type</span><span class="p">();</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">current</span> <span class="o">==</span> <span class="n">ScalarType</span><span class="o">::</span><span class="n">Undefined</span><span class="p">){</span>
+       <span class="n">TORCH_THROW_ERROR</span><span class="p">(</span><span class="n">Error</span><span class="p">,</span> <span class="s">"DataType mustn't be equal to `Undefined` in `compute_common_type_`"</span><span class="p">);</span>
+       <span class="n">all_same_type</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+       <span class="k">break</span><span class="p">;</span>
+   <span class="p">}</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">common_type</span> <span class="o">==</span> <span class="n">ScalarType</span><span class="o">::</span><span class="n">Undefined</span><span class="p">)</span> <span class="n">common_type</span> <span class="o">=</span> <span class="n">current</span><span class="p">;</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">common_type</span> <span class="o">!=</span> <span class="n">current</span><span class="p">)</span> <span class="p">{</span>
+       <span class="c1">//lms 判断操作数tensor是不是为same type</span>
+       <span class="n">all_same_type</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+       <span class="k">break</span><span class="p">;</span>
+   <span class="p">}</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+   <span class="c1">//lms 存在标量，all_same_type = false</span>
+   <span class="n">all_same_type</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+   <span class="k">break</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">all_same_type</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">//lms 类型一样</span>
+  <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">make_tuple</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">common_type</span><span class="p">,</span> <span class="nb">true</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>        </div>
+      </li>
+      <li>device和common_type组合成tuple，进行最后一步的检查与更正：</li>
+    </ol>
+  </li>
+</ul>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">op</span> <span class="o">:</span> <span class="n">operands</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">//lms 对所有操作数进行循环遍历，确定最终的state</span>
+    <span class="n">state</span> <span class="o">=</span> <span class="n">TORCH</span><span class="o">::</span><span class="n">computation</span><span class="o">::</span><span class="n">update_result_type_state</span><span class="p">(</span><span class="n">op</span><span class="o">-&gt;</span><span class="n">tensor</span><span class="p">(),</span> <span class="n">state</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="k">auto</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">TORCH</span><span class="o">::</span><span class="n">computation</span><span class="o">::</span><span class="n">result_type</span><span class="p">(</span><span class="n">state</span><span class="p">);</span>
+
+<span class="k">auto</span> <span class="n">result</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_tuple</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="nb">false</span><span class="p">);</span>
+<span class="c1">//lms 最终的dType 肯定不能为Undefned</span>
+<span class="n">TORCH_INTERNAL_ASSERT</span><span class="p">(</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">ScalarType</span><span class="o">::</span><span class="n">Undefined</span><span class="p">);</span>
+<span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+</code></pre></div></div>
+<p>这里TypePromotion这个类比较重要，负责处理类型不同时的情况：
+TypePromotion有wrappedResult、dimResult、zeroResult三种scalar_type。wrappedResult处理tensor是由c++数据类型直接转化来的情况，dimResult处理正常tensor，zeroResult处理维度为0的情况。
+TypePromotion首先对操作数的类型进行is_wrapped_number-&gt;isComplexType进行基本数据类型、复数的判断。然后根据tensor的具体情况，走wrappedResult、dimResult、zeroResult三个分支。每个分支都会走promote_skip_undefined，里面会进行查表确定类型：</p>
+
+<p>在所有的操作数都经历过上面这个步骤后，维护的state的三个result会被联合比较取出最符合的作为result:</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="kr">inline</span> <span class="n">ScalarType</span> <span class="nf">combine_categories</span><span class="p">(</span><span class="n">ScalarType</span> <span class="n">higher</span><span class="p">,</span> <span class="n">ScalarType</span> <span class="n">lower</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">//lms</span>
+    <span class="cm">/**
+     * 1、higher 是复数，按复数来
+     * 2、lower 不是复数，higher是float，那就按higher来
+     * 3、bool是层级最低的
+     * 4、查表确定 promoteTypes
+     *
+     */</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">isComplexType</span><span class="p">(</span><span class="n">higher</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">higher</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">isComplexType</span><span class="p">(</span><span class="n">lower</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">isFloatingType</span><span class="p">(</span><span class="n">higher</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">higher</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">higher</span> <span class="o">==</span> <span class="n">ScalarType</span><span class="o">::</span><span class="n">Bool</span> <span class="o">||</span> <span class="n">isFloatingType</span><span class="p">(</span><span class="n">lower</span><span class="p">)</span> <span class="o">||</span> <span class="n">isComplexType</span><span class="p">(</span><span class="n">lower</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">promote_skip_undefined</span><span class="p">(</span><span class="n">higher</span><span class="p">,</span> <span class="n">lower</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">higher</span> <span class="o">!=</span> <span class="n">ScalarType</span><span class="o">::</span><span class="n">Undefined</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">higher</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">lower</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>得到了common device和common type，开始真正提升了，此时promote_and_check_block会对所有的输入输出op进行检查，根据策略实行不同的操作，其中主要的是策略为promotion_strategy_ == DataPromotionStrategy::PROMOTE || promotion_strategy_ == DataPromotionStrategy::PROMOTE_INPUTS且当前tensor类型与common type不一致时，需要进行op的tensor替换：</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">op</span><span class="p">.</span><span class="n">defined</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">to_be_promoted</span> <span class="o">&amp;&amp;</span> <span class="n">common_dtype_</span> <span class="o">!=</span> <span class="n">op</span><span class="p">.</span><span class="n">tensor</span><span class="p">().</span><span class="n">dtype</span><span class="p">().</span><span class="n">scalar_type</span><span class="p">())</span> <span class="p">{</span>
+    <span class="n">op</span><span class="p">.</span><span class="n">set_origin_tensor</span><span class="p">(</span><span class="n">op</span><span class="p">.</span><span class="n">tensor</span><span class="p">());</span>
+
+    <span class="n">TensorOptions</span> <span class="n">options</span> <span class="o">=</span> <span class="n">op</span><span class="p">.</span><span class="n">tensor</span><span class="p">().</span><span class="n">options</span><span class="p">();</span>
+    <span class="n">options</span> <span class="o">=</span> <span class="n">options</span><span class="p">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">scalar_type_to_type_meta</span><span class="p">(</span><span class="n">common_dtype_</span><span class="p">.</span><span class="n">value</span><span class="p">()));</span>
+
+    <span class="c1">// MemoryFormat::Contiguous will not affect origin tensor's memory_format;</span>
+    <span class="c1">//lms 提升之后的tensor</span>
+    <span class="n">Tensor</span> <span class="n">promoted</span> <span class="o">=</span> <span class="n">is_output</span> <span class="o">?</span> <span class="n">TORCH</span><span class="o">::</span><span class="n">empty_like</span><span class="p">(</span><span class="n">op</span><span class="p">.</span><span class="n">tensor</span><span class="p">(),</span> <span class="n">options</span><span class="p">,</span> <span class="n">MemoryFormat</span><span class="o">::</span><span class="n">Contiguous</span><span class="p">)</span>
+            <span class="o">:</span> <span class="n">op</span><span class="p">.</span><span class="n">tensor</span><span class="p">().</span><span class="n">to</span><span class="p">(</span><span class="n">options</span><span class="p">,</span>  <span class="cm">/*non_blocking*/</span> <span class="nb">false</span><span class="p">,</span> <span class="cm">/*copy*/</span><span class="nb">false</span><span class="p">,</span> <span class="n">TORCH</span><span class="o">::</span><span class="n">nullopt</span><span class="p">);</span>
+    <span class="c1">// Promoting</span>
+    <span class="n">op</span><span class="p">.</span><span class="n">set_tensor</span><span class="p">(</span><span class="n">promoted</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<blockquote>
+  <p>Note: 这里都没有涉及shape的改变，因为对于inputs_，我们是不会实际改变shape。</p>
+</blockquote>
+
+<h4 id="待粘贴">待粘贴</h4>
+
+</article>
+<div id="info-bottom">
+<hr>
+<p>标签: <block class="tag"><a href="/archive/#Pytorch">Pytorch</a></block></p>
+<p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
+<p><b>聊天</b>请在 <a href="https://gitter.im/foreverlms/community" target="_blank">gitter.im/foreverlms</a> </p>
+</div>
+
+</div>
+<div class="info-bottom"><div class="info-bottom-text">
+License <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a> | Subscribe <a href="/feed.xml">RSS</a> | Email <a href="mailto:codechaser@163.com">codechaser囧163.com</a> | 博客模板 <a href="https://fzheng.me/" target="_blank">无求备斋笔记</a>
+</div></div> 
+</div>
+</body>
+<script src="https://use.typekit.net/hvv6ahj.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+</html>

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>从零手写VIO-滑动窗口算法及VIO系统可观性和一致性</title>
+	<meta name="description" content="">
+	<meta name="keywords" content="slam, 寒鸥惊起一双双" />
+	<link rel="canonical" href="https://blog.bobliao.xyz/%E7%AC%94%E8%AE%B0/2019/07/18/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E7%AE%97%E6%B3%95.html">
+	<link rel="alternate" type="application/rss+xml" title="寒鸥惊起一双双" href="https://blog.bobliao.xyz/feed.xml" />
+   	<link rel="stylesheet" type="text/css" href="/css/index.css">
+</head>
+
+<body>
+<div class="body-wrapper">
+<div class="nav-header">
+<a href="/">寒鸥惊起一双双</a> | <a href="https://github.com/foreverlms" target="_blank">Github</a> |<a href="/about"> 关于我 </a></div>
+<div class="main-body">
+<header>
+<h2>从零手写VIO-滑动窗口算法及VIO系统可观性和一致性</h2>
+<p><i>2019-07-18</i></p>
+</header>
+<article>
+<ul id="markdown-toc">
+  <li><a href="#高斯分布gaussian-distribution---信息矩阵information-matrix" id="markdown-toc-高斯分布gaussian-distribution---信息矩阵information-matrix">高斯分布(Gaussian Distribution) -&gt; 信息矩阵(Information Matrix)</a></li>
+  <li><a href="#边际概率及舒尔补" id="markdown-toc-边际概率及舒尔补">边际概率及舒尔补</a>    <ul>
+      <li><a href="#舒尔补-schur-complement-1" id="markdown-toc-舒尔补-schur-complement-1">舒尔补 Schur Complement [1]</a></li>
+      <li><a href="#舒尔补应用于marginalization" id="markdown-toc-舒尔补应用于marginalization">舒尔补应用于Marginalization</a></li>
+    </ul>
+  </li>
+  <li><a href="#滑动窗口算法" id="markdown-toc-滑动窗口算法">滑动窗口算法</a></li>
+  <li><a href="#不可观性" id="markdown-toc-不可观性">不可观性</a></li>
+  <li><a href="#参考文献" id="markdown-toc-参考文献">参考文献</a></li>
+  <li><a href="#附件" id="markdown-toc-附件">附件</a></li>
+</ul>
+
+<h3 id="高斯分布gaussian-distribution---信息矩阵information-matrix">高斯分布(Gaussian Distribution) -&gt; 信息矩阵(Information Matrix)</h3>
+
+<p>SLAM问题求解可以抽象成一个最大后验估计(Maximum a Posterior)问题：</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{equation}
+\begin{split}
+	\xi_{MAP} &= \arg \max \limits_{\xi} p(\xi | r) \\
+	&\Rightarrow \arg \max \limits_{\xi} \prod_{i}p(r_i | \xi)p(\xi) \\
+	&\Rightarrow \arg \min \limits_{\xi} -\prod_{i}p(r_i | \xi)p(\xi) \\
+	&\Rightarrow \arg \min \limits_{\xi} \left[ -\sum \limits_i \log p(r_i | \xi) - \log p(\xi) \right]
+\end{split}
+\end{equation} %]]></script>
+
+<p>这里假设观测量$r_i$服从多元独立高斯分布，那么
+<script type="math/tex">p(r_i | \xi ) = \mathcal{N}(\mu_i,\Sigma_i),\, p(\xi)=\mathcal{N}(\mu_\xi,\Sigma_\xi)</script>，$\xi_{MAP}$可以简化为：</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{equation}
+\begin{split}
+	\xi_{MAP} &\Rightarrow \arg \min \limits_{\xi} \left[ -\sum \limits_i \log p(r_i | \xi) - \log p(\xi) \right] \\
+	&\Rightarrow \arg \min \limits_{\xi} \left[ -\sum \limits_i \log \exp \left( -\frac{1}{2} (r_i-\mu_i)^T\Sigma_i(x-\mu) \right) 
+	  -\log \exp \left( -\frac{1}{2} (\xi-\mu_\xi)^T\Sigma_\xi(\xi-\mu_\xi) \right) \right] \\
+	&\Rightarrow \arg \min \limits_{\xi} \left\{ \sum \limits_{i} {|| r_i-\mu_i||}_{\Sigma_i}^{2} + {|| \xi-\mu_\xi ||}^2_{\Sigma_\xi} \right\}
+\end{split}
+\end{equation} %]]></script>
+
+<p>最终，一个求最大后验概率的问题，变成了一个求各个独立观测量与先验范数和的最小二乘问题。</p>
+
+<p>在多元高斯分布中，协方差矩阵的逆称之为信息矩阵。</p>
+<ul>
+  <li>协方差矩阵非对角元素为0表示对应变量之间没有相关性，大于0表示两变量正相关，小于0表示负相关，等于0不相关。</li>
+  <li>信息矩阵中非对角线元素为负数，表示在相应变量关于其他变量成正相关；为0表示相应元素关于其他变量条件独立；大于0表示相应变量间关于其他变量成负相关。</li>
+</ul>
+
+<p><strong>协方差矩阵元素为0并不意味信息矩阵对应元素为0</strong></p>
+
+<h3 id="边际概率及舒尔补">边际概率及舒尔补</h3>
+<h4 id="舒尔补-schur-complement-1">舒尔补 Schur Complement [1]</h4>
+
+<p>假设一个 (p+q)×(p+q)的矩阵M被分为A, B, C, D四个部分，分别是p×p、p×q、q×p以及q×q的矩阵：</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{equation}
+\begin{split}
+	M=
+	\begin{bmatrix}
+	A & B \\
+	C & D
+	\end{bmatrix}
+\end{split}
+\end{equation} %]]></script>
+
+<p>且D是<strong>可逆</strong>矩阵，则D在M中的<strong>舒尔补</strong>是$A-BD^{-1}C$。同理，若A可逆，则A在M中的舒尔补是$D-CA^{-1}B$。</p>
+
+<p>舒尔补实际上是对M进行一些初等变换之后得出的其中一部分矩阵块。假设存在一个下三角矩阵：</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{equation}
+\begin{split}
+	L=
+	\begin{bmatrix}
+	I_p & 0 \\
+	-CA^{-1} & I_q
+	\end{bmatrix}
+\end{split}
+\end{equation} %]]></script>
+
+<p>M左乘L作行变换：</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{equation}
+\begin{split}
+	L \cdot M &= 
+	\begin{bmatrix}
+	I_p & 0 \\
+	-CA^{-1} & I_q
+	\end{bmatrix}
+	\begin{bmatrix}
+	A & B \\
+	C & D
+	\end{bmatrix} \\
+	&= 
+	\begin{bmatrix}
+	A & B \\
+	0 & D-CA^{-1}B
+	\end{bmatrix} \\
+
+	&= 
+	\begin{bmatrix}
+	A & 0 \\
+	0 & D-CA^{-1}B
+	\end{bmatrix} 
+
+	\begin{bmatrix}
+	I_p & A^{-1}B \\
+	0 & I_q
+	\end{bmatrix} 
+\end{split}
+\end{equation} %]]></script>
+
+<p>所以通过上面式子可以求出$M^{-1}$：</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{equation}
+\begin{split}
+	M^{-1}
+	&= 
+	\begin{bmatrix}
+	I_p & A^{-1}B \\
+	0 & I_q
+	\end{bmatrix}^{-1} 
+	\begin{bmatrix}
+	A & 0 \\
+	0 & D-CA^{-1}B
+	\end{bmatrix}^{-1}
+	L \\
+	&= 
+	\begin{bmatrix}
+	I_p & -A^{-1}B \\
+	0 & I_q
+	\end{bmatrix}
+	\begin{bmatrix}
+	A^{-1} & 0 \\
+	0 & {(D-CA^{-1}B)}^{-1}
+	\end{bmatrix}
+	\begin{bmatrix}
+	I_p & 0 \\
+	-CA^{-1} & I_q
+	\end{bmatrix}
+\end{split}
+\end{equation} %]]></script>
+
+<h4 id="舒尔补应用于marginalization">舒尔补应用于Marginalization</h4>
+
+<p>多元高斯分布的协方差矩阵有着如下形式：</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{equation}
+\Sigma=
+\begin{bmatrix}
+	A & C^T \\
+	C & D
+\end{bmatrix}
+\end{equation} %]]></script>
+
+<p>假设满足该协方差矩阵的变量$x=\begin{bmatrix} a &amp; b \end{bmatrix}^T$，那么$a$，$b$的联合概率分布依然满足高斯分布：</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{equation}
+	\begin{split}
+		P(a,b)=P(a)P(b | a) \propto \exp \left( -\frac{1}{2} \begin{bmatrix} a \\ b \end{bmatrix}^T \begin{bmatrix} A & C^T \\ C & D \end{bmatrix}^{-1} \begin{bmatrix} a \\ b \end{bmatrix}\right)
+	\end{split}
+\end{equation} %]]></script>
+
+<p>利用舒尔补，可以将$a$的边际概率marg出来（也就是marg掉$b$）。</p>
+
+<p>对于<strong>协方差矩阵</strong>，有：</p>
+
+<ul>
+  <li>
+    <p>边际概率$p(a)$的协方差只需从联合分布的协方差矩阵中取出对应矩阵块即可:</p>
+
+    <script type="math/tex; mode=display">p(a) \propto \exp \left( -\frac{1}{2} a^TA^{-1}a \right) \sim \mathcal{N}(0,A)</script>
+  </li>
+  <li>
+    <p>对于条件概率（以未被marg的变量作为条件） $p(b | a)$，其协方差矩阵变为该变量对应的舒尔补$\Delta A$，均值也可通过分解联合高斯分布得到:</p>
+
+    <script type="math/tex; mode=display">p(b|a) \propto \exp \left( -\frac{1}{2} (b-CA^{-1}a)^T{\Delta A}^{-1}(b-CA^{-1}a)  \right) \sim \mathcal{N}(CA^{-1}a,\Delta A)</script>
+  </li>
+</ul>
+
+<p>对于<strong>信息矩阵</strong>，在信息矩阵：</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\Lambda = 
+	\begin{bmatrix}
+		A & C^T \\
+		C & D
+	\end{bmatrix}^{-1}
+	=
+	\begin{bmatrix}
+		\Lambda_{aa} & \Lambda_{ab} \\
+		\Lambda_{ba} & \Lambda_{bb}
+	\end{bmatrix} %]]></script>
+
+<p>有：</p>
+<ul>
+  <li>
+    <p>边际概率$p(a)$的信息矩阵为：</p>
+
+    <script type="math/tex; mode=display">A^{-1}=\Lambda_{aa}-\Lambda_{ab}{\Lambda_{bb}}^{-1}\Lambda_{ba}</script>
+  </li>
+  <li>
+    <p>条件概率的信息矩阵为：</p>
+
+    <script type="math/tex; mode=display">{\Delta A}^{-1} = \Lambda_{bb}</script>
+  </li>
+</ul>
+
+<h3 id="滑动窗口算法">滑动窗口算法</h3>
+
+<p>在一个sliding window里，只维护若干个状态量，当新的观测量到来时，marg掉最老的状态量。</p>
+
+<p style="text-align:center"><img src="/images/vio/marg.png" alt="图" /></p>
+
+<p>在滑动窗口算法中marg掉老得变量会导致信息传递到原先条件独立的变量，造成信息矩阵稠密化。旧的变量被去除，那么需要将新的变量信息矩阵添加到原信息矩阵中去：</p>
+
+<p style="text-align:center"><img src="/images/vio/marg_2.png" alt="图" /></p>
+
+<p>在向优化窗口中添加新的残差以及与被marg掉变量条件独立无关的残差后要计算新的信息矩阵：</p>
+
+<p style="text-align:center"><img src="/images/vio/new_info_matrix.png" alt="图" /></p>
+
+<h3 id="不可观性">不可观性</h3>
+
+<p>不可观性体现在当SLAM过程中物体运动发生变化，状态量实际改变，但观测量不变进而导致损失函数不会变化，SLAM估计的状态量不变。这意味着求解最小二乘时对应的信息矩阵$\Lambda$存在着零空间（Null Space）。</p>
+
+<ul>
+  <li>单目SLAM系统体现在7自由度不可观：6自由度位姿+尺度；</li>
+  <li>单目+IMU4自由度不可观：yaw偏航角、世界坐标3自由度。
+解决这一零空间导致解的不确定性，采用FEJ(First Estimated Jacobian)。FEJ要求不同残差对同一个状态求雅克比时线性化点必须一致，避免了零空间退化而使得不可观状态量变为可观。</li>
+</ul>
+
+<h3 id="参考文献">参考文献</h3>
+
+<font size="2">[1]. 中文维基-舒尔补<a href="https://wikipedia.tk.gugeeseo.com/wiki/%E8%88%92%E5%B0%94%E8%A1%A5" target="_blank">$\nearrow$</a></font>
+
+<h3 id="附件">附件</h3>
+
+<center><object data="/files/vio/4week/hm.pdf" width="700" height="1500" type="application/pdf"></object></center>
+
+</article>
+<div id="info-bottom">
+<hr>
+<p>标签: <block class="tag"><a href="/archive/#slam">slam</a></block></p>
+<p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
+<p><b>聊天</b>请在 <a href="https://gitter.im/foreverlms/community" target="_blank">gitter.im/foreverlms</a> </p>
+</div>
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}, 
+  "HTML-CSS": {
+    availableFonts: ["STIX","TeX"],
+    preferredFont: "STIX",
+    webFont: "STIX-Web"
+  }});
+</script> -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+	  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}, 
+	  "HTML-CSS":
+	  {
+	    availableFonts: ["STIX","TeX"],
+	    preferredFont: "STIX",
+	    webFont: "STIX-Web",
+	    scale: 90,
+	    minScaleAdjust: 70
+	  },
+	  CommonHTML: 
+	  {
+	    scale: 90,
+	    minScaleAdjust: 70
+	  }
+	});
+</script>
+
+<!-- <script>
+MathJax.Hub.Queue(function () {
+  var math = document.getElementById("rescale");
+  var w = math.offsetWidth, W = math.parentNode.offsetWidth-40;
+  if (w > W) {
+    math.style.fontSize = (90*W/w)+"%";
+    MathJax.Hub.getAllJax(math)[0].Rerender();
+  }
+});
+</script> -->
+<!-- <script type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script> -->
+
+<script src="https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+</div>
+<div class="info-bottom"><div class="info-bottom-text">
+License <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a> | Subscribe <a href="/feed.xml">RSS</a> | Email <a href="mailto:codechaser@163.com">codechaser囧163.com</a> | 博客模板 <a href="https://fzheng.me/" target="_blank">无求备斋笔记</a>
+</div></div> 
+</div>
+</body>
+<script src="https://use.typekit.net/hvv6ahj.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+</html>

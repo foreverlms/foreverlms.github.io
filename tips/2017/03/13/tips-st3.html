@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>常用工具配置TIPS</title>
+	<meta name="description" content="工具Tips">
+	<meta name="keywords" content="tools, 寒鸥惊起一双双" />
+	<link rel="canonical" href="https://blog.bobliao.xyz/tips/2017/03/13/tips-st3.html">
+	<link rel="alternate" type="application/rss+xml" title="寒鸥惊起一双双" href="https://blog.bobliao.xyz/feed.xml" />
+   	<link rel="stylesheet" type="text/css" href="/css/index.css">
+</head>
+
+<body>
+<div class="body-wrapper">
+<div class="nav-header">
+<a href="/">寒鸥惊起一双双</a> | <a href="https://github.com/foreverlms" target="_blank">Github</a> |<a href="/about"> 关于我 </a></div>
+<div class="main-body">
+<header>
+<h2>常用工具配置TIPS</h2>
+<p><i>2017-03-13</i></p>
+</header>
+<article>
+<p>工具Tips
+<!--more--></p>
+
+<h2 id="sublime-text-3-anaconda配置">Sublime Text 3 Anaconda配置</h2>
+<p>在安装Sublime Text3之后我们总会安装一些插件，比如Python的Anaconda自动补全插件。但是，装好之后发现import 时无法像别的IDE里面那样自动补全模块名，就像图中一样：
+ <img src="http://img.blog.csdn.net/20170526144407359?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbTBfMzcxOTY3ODc=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="问题截图" />
+解决办法在Sublime Text的github的主页README.md里面有介绍：
+<a href="https://github.com/DamnWidget/anaconda#auto-complete-for-import-behaves-badly">import behaves badly</a>
+我就翻译一下：
+找到Sublime Text3的包目录，在软件里Preferences/Browser Packages里面。然后在<code class="highlighter-rouge">Packages</code>里新建一个文件夹<code class="highlighter-rouge">Python</code>，里面新建一个<code class="highlighter-rouge">Completion Rules.tmPreferences</code>，<strong>注意别忘了空格</strong>，然后编辑里面内容为：</p>
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="cp">&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;</span>
+<span class="nt">&lt;plist</span> <span class="na">version=</span><span class="s">"1.0"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;dict&gt;</span>
+    <span class="nt">&lt;key&gt;</span>scope<span class="nt">&lt;/key&gt;</span>
+    <span class="nt">&lt;string&gt;</span>source.python<span class="nt">&lt;/string&gt;</span>
+    <span class="nt">&lt;key&gt;</span>settings<span class="nt">&lt;/key&gt;</span>
+    <span class="nt">&lt;dict&gt;</span>
+        <span class="nt">&lt;key&gt;</span>cancelCompletion<span class="nt">&lt;/key&gt;</span>
+        <span class="nt">&lt;string&gt;</span>^(.*\b(and|or)$)|(\s*(pass|return|and|or|(class|def)\s*[a-zA-Z_0-9]+)$)<span class="nt">&lt;/string&gt;</span>
+    <span class="nt">&lt;/dict&gt;</span>
+<span class="nt">&lt;/dict&gt;</span>
+<span class="nt">&lt;/plist&gt;</span>
+</code></pre></div></div>
+<p>然后重启subime就好了！</p>
+
+<h2 id="vscode的背景高亮颜色改变">VsCode的背景高亮颜色改变</h2>
+
+<p><code class="highlighter-rouge">Preference</code>-&gt;<code class="highlighter-rouge">Settings</code>-&gt;搜索<code class="highlighter-rouge">Editor token color customizations</code>-&gt;edit in settings.json-&gt;插入：</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="w">  </span><span class="s2">"workbench.colorCustomizations"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="s2">"editor.lineHighlightBackground"</span><span class="p">:</span><span class="w"> </span><span class="s2">"#220815"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"editor.selectionBackground"</span><span class="p">:</span><span class="w"> </span><span class="s2">"#771835"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"editor.wordHighlightBackground"</span><span class="p">:</span><span class="w"> </span><span class="s2">"#771835"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"editorCursor.foreground"</span><span class="p">:</span><span class="w"> </span><span class="s2">"#F12360"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+</span></code></pre></div></div>
+<p>按照自己喜欢的颜色改就可以了．</p>
+
+<h2 id="vscode-c-debug">vscode C++ Debug</h2>
+
+<p>vscode的调试功能真实太难用了,记录一下如何配置(举了一个例子):
+首先是<code class="highlighter-rouge">launch.json</code>:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="err">//</span><span class="w"> </span><span class="err">Use</span><span class="w"> </span><span class="err">IntelliSense</span><span class="w"> </span><span class="err">to</span><span class="w"> </span><span class="err">learn</span><span class="w"> </span><span class="err">about</span><span class="w"> </span><span class="err">possible</span><span class="w"> </span><span class="err">attributes.</span><span class="w">
+    </span><span class="err">//</span><span class="w"> </span><span class="err">Hover</span><span class="w"> </span><span class="err">to</span><span class="w"> </span><span class="err">view</span><span class="w"> </span><span class="err">descriptions</span><span class="w"> </span><span class="err">of</span><span class="w"> </span><span class="err">existing</span><span class="w"> </span><span class="err">attributes.</span><span class="w">
+    </span><span class="err">//</span><span class="w"> </span><span class="err">For</span><span class="w"> </span><span class="err">more</span><span class="w"> </span><span class="err">information</span><span class="p">,</span><span class="w"> </span><span class="err">visit</span><span class="p">:</span><span class="w"> </span><span class="err">https</span><span class="p">:</span><span class="err">//go.microsoft.com/fwlink/?linkid=</span><span class="mi">830387</span><span class="w">
+    </span><span class="s2">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.2.0"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"configurations"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"g++ build and debug active file"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cppdbg"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"request"</span><span class="p">:</span><span class="w"> </span><span class="s2">"launch"</span><span class="p">,</span><span class="w">
+            </span><span class="err">//</span><span class="w"> </span><span class="s2">"program"</span><span class="p">:</span><span class="w"> </span><span class="s2">"${fileDirname}/${fileBasenameNoExtension}"</span><span class="p">,</span><span class="w">
+            </span><span class="err">//需要调试的程序</span><span class="w">
+            </span><span class="s2">"program"</span><span class="p">:</span><span class="w"> </span><span class="s2">"${workspaceFolder}/dense_RGBD/rgbd"</span><span class="p">,</span><span class="w">
+            </span><span class="err">//参数</span><span class="w">
+            </span><span class="s2">"args"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+            </span><span class="s2">"stopAtEntry"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+            </span><span class="err">//程序运行目录</span><span class="w">
+            </span><span class="s2">"cwd"</span><span class="p">:</span><span class="w"> </span><span class="s2">"${workspaceFolder}/dense_RGBD/"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"environment"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+            </span><span class="s2">"externalConsole"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"MIMode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gdb"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"setupCommands"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                </span><span class="p">{</span><span class="w">
+                    </span><span class="s2">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Enable pretty-printing for gdb"</span><span class="p">,</span><span class="w">
+                    </span><span class="s2">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"-enable-pretty-printing"</span><span class="p">,</span><span class="w">
+                    </span><span class="s2">"ignoreFailures"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+            </span><span class="p">],</span><span class="w">
+            </span><span class="err">//每次调试之前需要做的task</span><span class="w">
+            </span><span class="s2">"preLaunchTask"</span><span class="p">:</span><span class="w"> </span><span class="s2">"make build"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"miDebuggerPath"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/usr/bin/gdb"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p>然后是<code class="highlighter-rouge">task.json</code>:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="s2">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="s2">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shell"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"make build"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./build.sh"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"options"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="err">//</span><span class="w"> </span><span class="s2">"cwd"</span><span class="p">:</span><span class="w"> </span><span class="s2">"{workspaceFolder}/"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+    </span><span class="s2">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.0.0"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p>我这里的<code class="highlighter-rouge">make build</code>是对要调试的源文件进行编译,写成了一个shell文件<code class="highlighter-rouge">build.sh</code>来执行:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="o">[</span> <span class="o">!</span> <span class="nt">-d</span> <span class="s2">"./build/"</span> <span class="o">]</span><span class="p">;</span><span class="k">then
+</span><span class="nb">mkdir</span> ./build
+<span class="k">else
+</span><span class="nb">echo</span> <span class="s2">"build文件夹已存在"</span>
+<span class="k">fi
+
+</span><span class="nb">cd </span>build
+cmake ..
+make rgbd
+make <span class="nb">install</span>
+</code></pre></div></div>
+
+<p>这样调试的大体配置就完成了,但是<strong>最重要的是要在cmake文件里添加gdb的调试编译选项</strong>: <code class="highlighter-rouge">SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -g -ggdb")</code></p>
+
+</article>
+<div id="info-bottom">
+<hr>
+<p>标签: <block class="tag"><a href="/archive/#tools">tools</a></block></p>
+<p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
+<p><b>聊天</b>请在 <a href="https://gitter.im/foreverlms/community" target="_blank">gitter.im/foreverlms</a> </p>
+</div>
+
+</div>
+<div class="info-bottom"><div class="info-bottom-text">
+License <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a> | Subscribe <a href="/feed.xml">RSS</a> | Email <a href="mailto:codechaser@163.com">codechaser囧163.com</a> | 博客模板 <a href="https://fzheng.me/" target="_blank">无求备斋笔记</a>
+</div></div> 
+</div>
+</body>
+<script src="https://use.typekit.net/hvv6ahj.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>从零手写VIO-基于优化的IMU与视觉信息融合</title>
+	<meta name="description" content="">
+	<meta name="keywords" content="slam, 寒鸥惊起一双双" />
+	<link rel="canonical" href="https://blog.bobliao.xyz/%E7%AC%94%E8%AE%B0/2019/07/08/vio%E7%AC%AC%E4%B8%89%E5%91%A8%E4%BD%9C%E4%B8%9A.html">
+	<link rel="alternate" type="application/rss+xml" title="寒鸥惊起一双双" href="https://blog.bobliao.xyz/feed.xml" />
+   	<link rel="stylesheet" type="text/css" href="/css/index.css">
+</head>
+
+<body>
+<div class="body-wrapper">
+<div class="nav-header">
+<a href="/">寒鸥惊起一双双</a> | <a href="https://github.com/foreverlms" target="_blank">Github</a> |<a href="/about"> 关于我 </a></div>
+<div class="main-body">
+<header>
+<h2>从零手写VIO-基于优化的IMU与视觉信息融合</h2>
+<p><i>2019-07-08</i></p>
+</header>
+<article>
+<ul id="markdown-toc">
+  <li><a href="#基于bundle-adjustment的vio融合" id="markdown-toc-基于bundle-adjustment的vio融合">基于Bundle Adjustment的VIO融合</a></li>
+  <li><a href="#最小二乘问题的求解" id="markdown-toc-最小二乘问题的求解">最小二乘问题的求解</a>    <ul>
+      <li><a href="#线性与非线性优化" id="markdown-toc-线性与非线性优化">线性与非线性优化</a></li>
+      <li><a href="#鲁棒核函数robust-kernel-function" id="markdown-toc-鲁棒核函数robust-kernel-function">鲁棒核函数(Robust Kernel Function)</a></li>
+    </ul>
+  </li>
+  <li><a href="#vio残差函数构建" id="markdown-toc-vio残差函数构建">VIO残差函数构建</a></li>
+</ul>
+
+<!-- 自定义变量 -->
+
+<h3 id="基于bundle-adjustment的vio融合">基于Bundle Adjustment的VIO融合</h3>
+
+<p>光束平差法（Bundle Adjustment）是SLAM中图优化框架的模型，本质上属于最小二乘（Least Square）方法。在视觉SLAM上，BA优化的是重投影误差（Sum of Reprojection Error）。</p>
+
+<p style="text-align:center"><img src="/images/vio/ba_1.png" alt="图" /></p>
+
+<p>上图中$f_j$、$f_i$是空间中的路标点，$c_1$、$c_2$、$c_3$是三个时刻的相机。在这张图上，$f_j$先后被$c_1$ 、$c_2$捕捉到，而$f_i$在$c_1$、$c_2$和$c_3$里出现。
+在特征点（路标点）三维坐标f，相机位姿q、p，特征点对应在不同图像上的坐标（观测量）$z^{c_i}_f$都已知的情况下，可以通过最小二乘来估计状态量的最优值：</p>
+
+<script type="math/tex; mode=display">\mathop{\arg\min}_{q,p,f}\sum_{i=1}^m\sum^n_{j=1} \left\|\pi(q_{wc_i},p_{wc_i},f_j)-z_{f_j}^{c_i} \right\|_{\Sigma_{ij}}</script>
+
+<p>式中$\pi(\cdot)$是投影函数，是在不同帧之间转换3D点坐标的方式；范数常常选取欧式范数。</p>
+
+<h3 id="最小二乘问题的求解">最小二乘问题的求解</h3>
+
+<h4 id="线性与非线性优化">线性与非线性优化</h4>
+<p>在构建出最小二乘问题后，如何求解成为关键。把重投影误差记作残差（residual）$f_i(x), i= 0,1,…,m$。$m$是观测次数。构建损失函数（loss function）：</p>
+
+<script type="math/tex; mode=display">F(x)=\frac{1}{2}\sum_{i=1}^m\left((f_i(x))\right)^2</script>
+
+<p>现在我们要求得一个$n$维的变量$x^* \in \mathbb{R}^n$以使loss function取得一个局部最小值。在这个问题中，一般$m \ge n$，即观测数据维度是肯定比状态量维度高的。对损失函数进行二阶泰勒展开（<em>PPT这里假设$F(x)$是可导且平滑的，需要去查资料验证</em>）：</p>
+
+<script type="math/tex; mode=display">F(x+\Delta x) = F(x)+\mathrm{\mathbf{J}}\Delta x+\frac{1}{2}\Delta x^T \mathrm{\mathbf{H}}\Delta x+O(\|\Delta x \|^3)</script>
+
+<p>现在问题变为在$x$处，$F(x)$怎么才能取到局部最小值呢？假设函数在$x$处一阶导数（即雅克比矩阵$\mathrm{\mathbf{J}}$）为$\mathbf{0}$，那么忽略掉高阶小量，损失函数在以$\Delta x$的步长逼近时是变大还是变小主要取决于$\frac{1}{2}\Delta x^T \mathrm{\mathbf{H}}\Delta x$项的正负。$\Delta x^T \mathrm{\mathbf{H}}\Delta x$是一个二次型，其正负又取决于损失函数的二阶导数（即海森矩阵$\mathrm{\mathbf{H}}$）。若$\mathrm{\mathbf{H}}$正定，F(x)在$x$处是局部最小值；若$\mathrm{\mathbf{H}}$负定，F(x)在$x$处是局部最大值。</p>
+
+<p>对于线性最小二乘问题，线性求解多样化，有正规方程、QR分解、Cholesky分解、奇异值分解SVD等。但是在SLAM过程中一般是非线性的，最常用的是迭代下降这种非线性优化方法。迭代法的思想是找到一个下降方向$\mathrm{\mathbf{d}}$和下降步长$\alpha$来使得下一次迭代的值$F(x_{k+1})$小于上一次迭代$F(x_k)$的值。这要求下降方向满足$\mathrm{\mathbf{J}}\mathrm{\mathbf{d}} &lt; 0$。</p>
+
+<p>怎么找到这个下降方向呢？最速下降法取:
+<script type="math/tex">\mathrm{\mathbf{d}}=-\frac{\mathrm{\mathbf{J}}^T}{\| \mathrm{\mathbf{J}} \|_2}</script></p>
+
+<p>即步长方向与一阶导（梯度）的方向相反来保证是在往下走,步长$\alpha$再另取。牛顿法更进一步，对$F(x+\Delta x)$对$\Delta x$求导来使得导数为0，解出$\Delta x$：</p>
+
+<script type="math/tex; mode=display">\frac{\partial F(X+\Delta x)}{\partial \Delta x} \approx \frac{\partial (F(X)+ \mathrm{\mathbf{J}}\Delta x+\frac{1}{2}\Delta x^T\mathrm{\mathbf{H}}\Delta x)}{\partial \Delta x} = \mathrm{\mathbf{J}}^T + \mathrm{\mathbf{H}}\Delta x=0</script>
+
+<p>$\Delta x = -H^{-1}J^T$。牛顿法相对于最速下降收敛更快，但是二阶导海森矩阵计算复杂。</p>
+
+<p>记m个观测的残差函数为：</p>
+
+<script type="math/tex; mode=display">f(x)=
+	\begin{bmatrix}
+		f_1(x) \\ ... \\ f_m(x)
+	\end{bmatrix}</script>
+
+<p>则有：</p>
+
+<script type="math/tex; mode=display">f^T(x)f(x)=\sum_{i=1}^m (fi(x))^2</script>
+
+<script type="math/tex; mode=display">\frac{\partial f(x)}{\partial x} = \mathrm{\mathbf{J}} = 	
+	\begin{bmatrix}
+		\mathrm{\mathbf{J}}_1 (x) \\ ... \\ \mathrm{\mathbf{J}}_m (x)
+	\end{bmatrix}</script>
+
+<p><em>这里$\mathrm{\mathbf{J}}$变成了残差的雅克比矩阵</em>。代入损失函数得：</p>
+
+<p style="text-align:center"><img src="/images/vio/loss_func_1.png" alt="图" /></p>
+
+<p>上式中$J^TJ$一般正定。由此可得知:</p>
+
+<script type="math/tex; mode=display">F^\prime(x)\approx (J^Tf)^T \\
+	F^{\prime\prime}(x)\approx J^TJ</script>
+
+<p>这里用$J^TJ$近似得到了$\mathrm{\mathbf{H}}$，减少了复杂度,到此对于一阶导为0可以衍生出两种方法：</p>
+
+<ul>
+  <li>
+    <p>Gauss-Newton</p>
+
+    <script type="math/tex; mode=display">(J^TJ)\Delta x_{gn}=-J^Tf</script>
+  </li>
+  <li>
+    <p>Levenberg-Marquardt</p>
+
+    <script type="math/tex; mode=display">(J^TJ+\mu I)\Delta x_{lm}=-J^Tf with \mu \ge 0</script>
+
+    <p>$\mu$是LM中的阻尼因子，$\mu &gt; 0$保证$JTJ+\mu I$正定，迭代朝着下降的方向进行；$\mu$非常大则$\Delta x_{lm}\approx -\frac{1}{\mu}J^Tf\approx -\frac{1}{\mu} F^{\prime}(x)^T$，接近最速下降法。若$\mu$较小，则$\Delta x \approx \Delta x_{gn}$，接近高斯牛顿。在LM迭代过程中，要根据$\Delta x$引起的损失函数变化来更新$\mu$：</p>
+    <ul>
+      <li>
+        <p>$\Delta x \rightarrow F(x) \uparrow \Rightarrow \mu \uparrow \&amp; \, \Delta x \downarrow$，增大阻尼减小步长，拒绝本次迭代</p>
+      </li>
+      <li>
+        <p>$ \Delta x \rightarrow F(x) \downarrow \Rightarrow \mu \downarrow \&amp; \, \Delta x \uparrow$，减小阻尼增大步长，加快收敛。
+   更科学的，通过阻尼更新策略比例因子$\rho$来确定：</p>
+      </li>
+    </ul>
+
+   	<script type="math/tex">\rho = \frac{F(x)-F(x+\Delta x_{lm})}{L(0)-L(\Delta x_{lm})}</script>
+
+    <p>其分母始终大于0。此时：</p>
+
+    <ul>
+      <li>$\rho &lt; 0 ,F(x) \uparrow \Rightarrow \mu \uparrow \Delta x \downarrow$，增大阻尼减小步长</li>
+      <li>$\rho&gt;0$且较大，减小$\mu$，调节LM接近Gauss-Newton，加速收敛</li>
+      <li>$\rho &gt;0$但较小，增大阻尼$\mu$，减小迭代步长。</li>
+    </ul>
+  </li>
+</ul>
+
+<h4 id="鲁棒核函数robust-kernel-function">鲁棒核函数(Robust Kernel Function)</h4>
+
+<p>鲁棒核函数用于解决出现outlier的问题。鲁棒核函数$\rho$直接作用在残差$f_k(x)$，等于对最小二乘问题做了包装，使得观测数据中的outlier影响不到最终的估计结果：</p>
+
+<script type="math/tex; mode=display">\mathop{\arg \min}_x \frac{1}{2} \sum_k \rho(\| f_k(x) \|^2)</script>
+
+<p>误差平方项记为<script type="math/tex">s_k = \| f_k(x) \|^2</script>，进行二阶展开有：</p>
+
+<script type="math/tex; mode=display">\frac{1}{2}\rho(s)=\frac{1}{2}(const + \rho^\prime\Delta s + \frac{1}{2}\rho^{\prime\prime} \Delta^2 s)</script>
+
+<p style="text-align:center"><img src="/images/vio/robust_kernel_1.png" alt="图" /></p>
+
+<p style="text-align:center"><img src="/images/vio/robust_kernel_2.png" alt="图" /></p>
+
+<h3 id="vio残差函数构建">VIO残差函数构建</h3>
+
+<p>VIO残差函数的构建主要包括视觉重投影误差和IMU预积分误差。由于IMU工作频率高于相机，需要把离散的IMU误差预积分与相机融合。之后要进行残差Jacobian的推导，可以看PPT或相关资料。</p>
+
+<!-- ### 作业
+
+作业主要有三部分，一个是编程实践题，用来验证LM算法；一个VIO预积分误差雅克比元素推导；一个证明LM算法的解。在编程实践题第三问，我实现了论文[1]中提出的阻尼因子更新策略，在本例上相对于示例代码的更新策略迭代次数减少，精度和时间几乎一致,代码的实现和作业见附录。
+
+
+### 参考文献
+
+<font size="2">[1]. Kwak, Young-tae, Ji-won Hwang, and Cheol-jung Yoo. "A new damping strategy of Levenberg-Marquardt algorithm for multilayer perceptrons." Neural Network World 21.4 (2011): 327. <a href="https://pdfs.semanticscholar.org/e8cd/bb776a03470c5a5b95621b296c2b448800ed.pdf" target="_blank">$\nearrow$</a></font>
+
+
+### 附录
+
+#### 作业
+<center><object data="/files/vio/3week/hm.pdf" width="700" height="1500" type='application/pdf'></object></center>
+
+#### 新的更新策略
+<!-- <script src="https://gist.github.com/foreverlms/682f077bf9915c7584d63baf5c8bcb63.js"></script> -->
+<!-- <script src='https://gitee.com/bobliao/codes/mhu3gjv1ks0zlydwr976583/widget_preview?title=new_strategy.cpp'></script> -->
+<p>–&gt;</p>
+
+</article>
+<div id="info-bottom">
+<hr>
+<p>标签: <block class="tag"><a href="/archive/#slam">slam</a></block></p>
+<p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
+<p><b>聊天</b>请在 <a href="https://gitter.im/foreverlms/community" target="_blank">gitter.im/foreverlms</a> </p>
+</div>
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}, 
+  "HTML-CSS": {
+    availableFonts: ["STIX","TeX"],
+    preferredFont: "STIX",
+    webFont: "STIX-Web"
+  }});
+</script> -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+	  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}, 
+	  "HTML-CSS":
+	  {
+	    availableFonts: ["STIX","TeX"],
+	    preferredFont: "STIX",
+	    webFont: "STIX-Web",
+	    scale: 90,
+	    minScaleAdjust: 70
+	  },
+	  CommonHTML: 
+	  {
+	    scale: 90,
+	    minScaleAdjust: 70
+	  }
+	});
+</script>
+
+<!-- <script>
+MathJax.Hub.Queue(function () {
+  var math = document.getElementById("rescale");
+  var w = math.offsetWidth, W = math.parentNode.offsetWidth-40;
+  if (w > W) {
+    math.style.fontSize = (90*W/w)+"%";
+    MathJax.Hub.getAllJax(math)[0].Rerender();
+  }
+});
+</script> -->
+<!-- <script type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script> -->
+
+<script src="https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+</div>
+<div class="info-bottom"><div class="info-bottom-text">
+License <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a> | Subscribe <a href="/feed.xml">RSS</a> | Email <a href="mailto:codechaser@163.com">codechaser囧163.com</a> | 博客模板 <a href="https://fzheng.me/" target="_blank">无求备斋笔记</a>
+</div></div> 
+</div>
+</body>
+<script src="https://use.typekit.net/hvv6ahj.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+</html>

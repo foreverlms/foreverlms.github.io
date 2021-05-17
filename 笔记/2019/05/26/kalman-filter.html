@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>高斯滤波--卡尔曼滤波</title>
+	<meta name="description" content="卡尔曼滤波对具有线性动态测量函数的有限阶问题利用矩参数来实现贝叶斯滤波,属于高斯滤波一种.">
+	<meta name="keywords" content="概率机器人, slam, 寒鸥惊起一双双" />
+	<link rel="canonical" href="https://blog.bobliao.xyz/%E7%AC%94%E8%AE%B0/2019/05/26/kalman-filter.html">
+	<link rel="alternate" type="application/rss+xml" title="寒鸥惊起一双双" href="https://blog.bobliao.xyz/feed.xml" />
+   	<link rel="stylesheet" type="text/css" href="/css/index.css">
+</head>
+
+<body>
+<div class="body-wrapper">
+<div class="nav-header">
+<a href="/">寒鸥惊起一双双</a> | <a href="https://github.com/foreverlms" target="_blank">Github</a> |<a href="/about"> 关于我 </a></div>
+<div class="main-body">
+<header>
+<h2>高斯滤波--卡尔曼滤波</h2>
+<p><i>2019-05-26</i></p>
+</header>
+<article>
+<p>卡尔曼滤波对具有线性动态测量函数的有限阶问题利用矩参数来实现贝叶斯滤波,属于高斯滤波一种.
+<!--more--></p>
+
+<p>高斯滤波的基本思想是置信度(belief)用多元正态分布表示.$x$的密度用两个参数均值$\mu$和方差$\Sigma$来表示.均值是n维向量,协方差是对称半正定二次型.高斯滤波的参数均值和方差称为矩参数(moments parameterization),这二者分别是概率分布的一阶矩和二阶矩,正态分布的其他矩都为零.</p>
+
+<p>卡尔曼滤波(Kalman Filter, KF)实现了对<strong>连续状态</strong>的置信度计算,不适用于离散或混合状态空间.</p>
+
+<h2 id="线性高斯系统">线性高斯系统</h2>
+
+<p>在除了贝叶斯滤波的马尔科夫假设之外,若连续变量满足以下三个特性,可以认为其后验是满足高斯(Gaussian)分布的:</p>
+
+<ul>
+  <li>状态转移概率<script type="math/tex">p({\boldsymbol x}\_t \|{\boldsymbol u}_t,x_{t-1})</script>必须是携带随机高斯噪声的参数的线性函数,即:</li>
+</ul>
+
+<script type="math/tex; mode=display">{\boldsymbol x}_t=A_t{\boldsymbol x}_{t-1}+B_t{\boldsymbol u}_t+\varepsilon_t</script>
+
+<p>式中$\varepsilon_t$是一个高斯随机变量,表示由状态转移引入的不确定性,其维数与状态向量$x$的维数相同.其均值为0,方差用$R_t$表示.上式表明状态变量与带有附加高斯噪声的状态转移成线性关系.后验表达式为:</p>
+
+<script type="math/tex; mode=display">p(x_t|u,x_{t-1})={\rm det}{(2\pi R_t)}^{-\frac{1}{2}}{\rm exp}\{-\frac{1}{2}(x_t-A_tx_{t-1}-B_tu_t)^TR_t^{-1}(x_t-A_tx_{t-1}-B_tu_t)\}</script>
+
+<p>式中均值为$A_tx_{t-1}+B_tu_t$,方差由$R_t$给定.</p>
+
+<ul>
+  <li>测量概率$p(z_t|x_t)$也与带有高斯噪声的自变量成线性关系:</li>
+</ul>
+
+<script type="math/tex; mode=display">z_t=C_tx_t+\delta_t</script>
+
+<p>$\delta_t$是均值为0,方差为$Q_t$的多变量高斯分布.$P(z_t|x_t)$由下式给出:</p>
+
+<script type="math/tex; mode=display">p(z_t|x_t)=det(2\pi Q_t)^{-\frac{1}{2}}exp\{-\frac{1}{2}(z_t-C_tx_t)^TQ_t^{-1}(z-C_tx_t\}</script>
+
+<ul>
+  <li>初始置信度${\rm bel}(x_0)$必须是正态分布的.$\mu_0$表示置信度的均值,$\Sigma_0$表示方差:</li>
+</ul>
+
+<script type="math/tex; mode=display">{\rm bel}(x_0)=p(x_0)={\rm det}(x_0)={\rm det}(2\pi \Sigma_0)^{-\frac{1}{2}}{\rm exp}\{-\frac{1}{2}(x_0-\mu_0)^T\Sigma_0^{-1}(x_0-\mu_0)\}</script>
+
+<p>上面的三个假设保证了后验${\rm bel}(x_t)$在任何时刻t总符合高斯分布.</p>
+
+<h2 id="卡尔曼滤波算法">卡尔曼滤波算法</h2>
+
+<p>KF的输入就是$t-1$时刻的置信度,输出的是$t$时刻的置信度.卡尔曼滤波算法主要由预测和更新(innovation)构成,具体步骤如下:</p>
+
+<ol>
+  <li>
+    <p>接收输入$\mu_{t-1}$,$\Sigma_{t-1}$,$z_t$,分别为上一时刻的状态均值和方差以及当前的观测值.</p>
+  </li>
+  <li>
+    <p>$\bar \mu_t=A_t\mu_{t-1}+B_t\mu_t$
+ $\bar \Sigma_t=A_t\Sigma_{t-1}A^T_t+R_t$</p>
+  </li>
+  <li>
+    <p>$K_t=\bar \Sigma_{t-1}C_t^T(C_t\bar \Sigma_t^T+Q_t)^{-1}$</p>
+  </li>
+  <li>
+    <p>$\mu_t=\bar \mu_t+K_t(z_t-C_t\bar \mu_t)$
+ $\Sigma_t=(I-K_tC_t)\bar \Sigma_t$</p>
+  </li>
+  <li>
+    <p><em>return</em> $\mu_t,\Sigma_t$</p>
+  </li>
+</ol>
+
+<p>在算法中,$K_t$是卡尔曼增益(Kalman gain).对于算法的复杂度,由于第3步矩阵求逆时间复杂度至少为$O(d^{2.4})$,$d$为矩阵维度$d\times d$;在SLAM中,测量空间$z$的维度往往小于状态空间$x$维度,第4步更新的矩阵乘法时间复杂度至少为$O(n^2)$.</p>
+
+</article>
+<div id="info-bottom">
+<hr>
+<p>标签: <block class="tag"><a href="/archive/#概率机器人">概率机器人</a></block><block class="tag"><a href="/archive/#slam">slam</a></block></p>
+<p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
+<p><b>聊天</b>请在 <a href="https://gitter.im/foreverlms/community" target="_blank">gitter.im/foreverlms</a> </p>
+</div>
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}, 
+  "HTML-CSS": {
+    availableFonts: ["STIX","TeX"],
+    preferredFont: "STIX",
+    webFont: "STIX-Web"
+  }});
+</script> -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+	  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}, 
+	  "HTML-CSS":
+	  {
+	    availableFonts: ["STIX","TeX"],
+	    preferredFont: "STIX",
+	    webFont: "STIX-Web",
+	    scale: 90,
+	    minScaleAdjust: 70
+	  },
+	  CommonHTML: 
+	  {
+	    scale: 90,
+	    minScaleAdjust: 70
+	  }
+	});
+</script>
+
+<!-- <script>
+MathJax.Hub.Queue(function () {
+  var math = document.getElementById("rescale");
+  var w = math.offsetWidth, W = math.parentNode.offsetWidth-40;
+  if (w > W) {
+    math.style.fontSize = (90*W/w)+"%";
+    MathJax.Hub.getAllJax(math)[0].Rerender();
+  }
+});
+</script> -->
+<!-- <script type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script> -->
+
+<script src="https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+</div>
+<div class="info-bottom"><div class="info-bottom-text">
+License <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a> | Subscribe <a href="/feed.xml">RSS</a> | Email <a href="mailto:codechaser@163.com">codechaser囧163.com</a> | 博客模板 <a href="https://fzheng.me/" target="_blank">无求备斋笔记</a>
+</div></div> 
+</div>
+</body>
+<script src="https://use.typekit.net/hvv6ahj.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+</html>

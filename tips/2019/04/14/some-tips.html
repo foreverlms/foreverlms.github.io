@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>Tips about cv or slam</title>
+	<meta name="description" content="OpenCV Tips">
+	<meta name="keywords" content="cs, opencv, 寒鸥惊起一双双" />
+	<link rel="canonical" href="https://blog.bobliao.xyz/tips/2019/04/14/some-tips.html">
+	<link rel="alternate" type="application/rss+xml" title="寒鸥惊起一双双" href="https://blog.bobliao.xyz/feed.xml" />
+   	<link rel="stylesheet" type="text/css" href="/css/index.css">
+</head>
+
+<body>
+<div class="body-wrapper">
+<div class="nav-header">
+<a href="/">寒鸥惊起一双双</a> | <a href="https://github.com/foreverlms" target="_blank">Github</a> |<a href="/about"> 关于我 </a></div>
+<div class="main-body">
+<header>
+<h2>Tips about cv or slam</h2>
+<p><i>2019-04-14</i></p>
+</header>
+<article>
+<p>OpenCV Tips
+<!--more--></p>
+
+<h3 id="surfsift等算子的支持">SURF/SIFT等算子的支持</h3>
+
+<p>opencv3.x以上删除了默认对SURF等特征提取算子的支持，为了获取这些算子，需要下载对应版本的<code class="highlighter-rouge">opencv-contrib</code>来进行补充编译。</p>
+
+<p>步骤：</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd </span>OPENCV_SOURCE_CODE_PATH
+<span class="nb">mkdir </span>build <span class="o">&amp;&amp;</span> <span class="nb">cd </span>build
+<span class="nb">sudo </span>cmake <span class="nt">-D</span> <span class="nv">CMAKE_INSTALL_PREFIX</span><span class="o">=</span>OPENCV_INSTALL_PATH <span class="nt">-D</span> <span class="nv">CMAKE_BUILD_TYPE</span><span class="o">=</span>RELEASE <span class="nt">-D</span> <span class="nv">OPENCV_EXTRA_MODULES_PATH</span><span class="o">=</span>OPENCV_CONTRIB_PATH/modules <span class="nt">-D</span> OPENCV_ENABLE_NONFREE:BOOL<span class="o">=</span>ON <span class="nt">-D</span> <span class="nv">CMAKE_CXX_FLAGS</span><span class="o">=</span><span class="s2">"-std=c++11"</span> ..
+<span class="nb">sudo </span>make <span class="nt">-j12</span>
+<span class="nb">sudo </span>make <span class="nb">install</span>
+
+<span class="c"># 安装完之后会有很大体积的中间文件，可以通过clean删除</span>
+<span class="nb">sudo </span>make clean
+</code></pre></div></div>
+
+<p>在这个过程中还会有一些源文件的编译错误，可以按照提示修改opencv源码相应地方即可。</p>
+
+<h3 id="vtk支持">VTK支持</h3>
+
+<p>VTK(Visualization Tool Kit)需要安装，下载链接：https://vtk.org/download/</p>
+
+<p>下载下来解压之后按照常规的源码编译安装即可．安装之后需要重新编译OpenCV，只需要在上面的编译选项了加上<code class="highlighter-rouge">-D WITH_VTK=ON</code>即可．</p>
+
+<p><strong>注：VTK编译完之后需要保留<code class="highlighter-rouge">VTKConfig.cmake</code>文件用于CMAKE工程配置.</strong></p>
+
+<h3 id="dbow3编译出错">DBoW3编译出错</h3>
+
+<p>在14.04默认OpenCV是2.x版本的时候编译DBoW3虽然成功,但因为工程使用的是OPencv3,所以使用会有错误出现,必须在DBoW3的CMakeLists.txt里加入一句:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>set(OpenCV_DIR OPENCV_3_安装路径/share/OpenCV)
+</code></pre></div></div>
+
+<p>再对DBoW3进行编译安装就不会出错了.</p>
+
+</article>
+<div id="info-bottom">
+<hr>
+<p>标签: <block class="tag"><a href="/archive/#cs">cs</a></block><block class="tag"><a href="/archive/#opencv">opencv</a></block></p>
+<p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
+<p><b>聊天</b>请在 <a href="https://gitter.im/foreverlms/community" target="_blank">gitter.im/foreverlms</a> </p>
+</div>
+
+</div>
+<div class="info-bottom"><div class="info-bottom-text">
+License <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a> | Subscribe <a href="/feed.xml">RSS</a> | Email <a href="mailto:codechaser@163.com">codechaser囧163.com</a> | 博客模板 <a href="https://fzheng.me/" target="_blank">无求备斋笔记</a>
+</div></div> 
+</div>
+</body>
+<script src="https://use.typekit.net/hvv6ahj.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+</html>

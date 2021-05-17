@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>从零手写VIO-IMU传感器</title>
+	<meta name="description" content="">
+	<meta name="keywords" content="slam, 寒鸥惊起一双双" />
+	<link rel="canonical" href="https://blog.bobliao.xyz/%E7%AC%94%E8%AE%B0/2019/06/29/vio%E7%AC%AC%E4%BA%8C%E5%91%A8%E4%BD%9C%E4%B8%9A.html">
+	<link rel="alternate" type="application/rss+xml" title="寒鸥惊起一双双" href="https://blog.bobliao.xyz/feed.xml" />
+   	<link rel="stylesheet" type="text/css" href="/css/index.css">
+</head>
+
+<body>
+<div class="body-wrapper">
+<div class="nav-header">
+<a href="/">寒鸥惊起一双双</a> | <a href="https://github.com/foreverlms" target="_blank">Github</a> |<a href="/about"> 关于我 </a></div>
+<div class="main-body">
+<header>
+<h2>从零手写VIO-IMU传感器</h2>
+<p><i>2019-06-29</i></p>
+</header>
+<article>
+<ul id="markdown-toc">
+  <li><a href="#imu测量模型运动模型误差模型的构建" id="markdown-toc-imu测量模型运动模型误差模型的构建">IMU测量模型、运动模型、误差模型的构建</a>    <ul>
+      <li><a href="#imu测量模型" id="markdown-toc-imu测量模型">IMU测量模型</a></li>
+      <li><a href="#imu运动模型" id="markdown-toc-imu运动模型">IMU运动模型</a></li>
+      <li><a href="#imu误差模型" id="markdown-toc-imu误差模型">IMU误差模型</a></li>
+    </ul>
+  </li>
+  <li><a href="#imu运动模型的离散化数据处理" id="markdown-toc-imu运动模型的离散化数据处理">IMU运动模型的离散化数据处理</a></li>
+  <li><a href="#附录" id="markdown-toc-附录">附录</a></li>
+</ul>
+
+<p>从零手写VIO课程的第二周主要在于两部分:</p>
+
+<ul>
+  <li>IMU测量模型、运动模型、误差模型的构建；</li>
+  <li>IMU运动模型的离散化数据处理。</li>
+</ul>
+
+<h3 id="imu测量模型运动模型误差模型的构建">IMU测量模型、运动模型、误差模型的构建</h3>
+
+<h4 id="imu测量模型">IMU测量模型</h4>
+
+<p>加速度计的测量值$a_m$为弹簧拉力对应的加速度：</p>
+
+<script type="math/tex; mode=display">a_m=\frac{f}{m}=a-g</script>
+
+<p>，其中$m$为质量块质量，$a$为机器人本身在世界（惯性）坐标系下的实际加速度。
+陀螺仪的测量值即为IMU在body坐标系下的旋转角速度，要通过运动学模型转换到惯性坐标系下。</p>
+
+<h4 id="imu运动模型">IMU运动模型</h4>
+
+<p>通过构建类似极坐标的坐标表示方式，可以很方便地把IMU质量块在body系的受力、运动转换到inertial坐标系下。质量块在body坐标系下的坐标为：</p>
+
+<script type="math/tex; mode=display">r_B(t)=
+\begin{bmatrix}
+x_1(t) \\
+x_2(t) \\
+x_3(t) \\
+\end{bmatrix}</script>
+
+<p>将其旋转到惯性系下有:</p>
+
+<script type="math/tex; mode=display">r_I(t)=R_{IB}r_B</script>
+
+<p>对$r_I(t)$进行时间求导得到：</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{equation}
+\begin{split}
+	\dot{r_I} &= R_{IB}\dot{r_B}+\dot{R_{IB}}r_B \\
+			  &= R_{IB}\dot{r_B}+{R_{IB}\omega_b}^{\wedge}\cdot R_{IB} \cdot r_B \\
+			  &= R_{IB}\dot{r_B}+{R_{IB}\omega_b}^{\wedge} r_I \\
+			  &= R_{IB}\dot{r_B}+ \omega \times r_I \\
+			  &= R_{IB}v_B+ \omega \times r_I \\
+	v_I &= R_{IB}v_B+\omega \times r_I \Leftrightarrow R_{IB}v_B \equiv V_I - \omega \times r_I
+
+\end{split}
+\end{equation} %]]></script>
+
+<p>其中$\omega=R_{IB}\omega_B$，表示body坐标系下的角速度转换到inertial坐标系下。</p>
+
+<p>对$\dot{r_I}$再进行求导，得到：</p>
+
+<script type="math/tex; mode=display">a = a_I -2\omega \times v - \dot{\omega} \times r_I - \omega \times (\omega \times r_I)</script>
+
+<p>式中$a=R_{IB}a_B$，$v=R_{IB}v_B$，表示body系下的加速度和速度在inertial系下的转换结果。这个式子里$\omega \times v$为科氏力，$\dot{\omega} \times r_I$为欧拉力，$\omega \times (\omega \times r_I)$为离心力。详细证明可看第二周课件。</p>
+
+<h4 id="imu误差模型">IMU误差模型</h4>
+
+<p>IMU误差有随机误差和确定误差两种。确定性误差可包括偏差(bias)、缩放比(scale)、温度引起的误差、运行次数引起的误差等，这些可以通过标定去修正；随机误差假定为符合高斯分布，有高斯白噪声(white noise)、偏差随机游走(bias random walk)等，这些可以通过Allan方差标定法标定。</p>
+
+<ul>
+  <li>六面法标定确定性误差</li>
+  <li>Allan方差法</li>
+</ul>
+
+<p>最终可以给出IMU数据的数学模型（a,accelerator;g,gyro）：</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{equation}
+	\begin{split}
+		a_m^B &= S_aR_{BG}(a^G-g^G)+n_a+b_a \\
+		\omega_m^B  &= S_g\omega^B+s_{ga}a^B+n_g+b_g
+	\end{split}
+	\end{equation} %]]></script>
+
+<h3 id="imu运动模型的离散化数据处理">IMU运动模型的离散化数据处理</h3>
+
+<p>离散化数据处理主要是如何通过上个时刻的imu测量值积分得到下一时刻的机器人位姿。常用的有中值积分，欧拉积分等。</p>
+
+<p>本周作业主要是IMU数据仿真，见附录。</p>
+
+<h3 id="附录">附录</h3>
+
+<center><object data="/files/vio/2week/hm.pdf" width="700" height="1500" type="application/pdf"></object></center>
+
+</article>
+<div id="info-bottom">
+<hr>
+<p>标签: <block class="tag"><a href="/archive/#slam">slam</a></block></p>
+<p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
+<p><b>聊天</b>请在 <a href="https://gitter.im/foreverlms/community" target="_blank">gitter.im/foreverlms</a> </p>
+</div>
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}, 
+  "HTML-CSS": {
+    availableFonts: ["STIX","TeX"],
+    preferredFont: "STIX",
+    webFont: "STIX-Web"
+  }});
+</script> -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+	  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}, 
+	  "HTML-CSS":
+	  {
+	    availableFonts: ["STIX","TeX"],
+	    preferredFont: "STIX",
+	    webFont: "STIX-Web",
+	    scale: 90,
+	    minScaleAdjust: 70
+	  },
+	  CommonHTML: 
+	  {
+	    scale: 90,
+	    minScaleAdjust: 70
+	  }
+	});
+</script>
+
+<!-- <script>
+MathJax.Hub.Queue(function () {
+  var math = document.getElementById("rescale");
+  var w = math.offsetWidth, W = math.parentNode.offsetWidth-40;
+  if (w > W) {
+    math.style.fontSize = (90*W/w)+"%";
+    MathJax.Hub.getAllJax(math)[0].Rerender();
+  }
+});
+</script> -->
+<!-- <script type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script> -->
+
+<script src="https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+</div>
+<div class="info-bottom"><div class="info-bottom-text">
+License <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a> | Subscribe <a href="/feed.xml">RSS</a> | Email <a href="mailto:codechaser@163.com">codechaser囧163.com</a> | 博客模板 <a href="https://fzheng.me/" target="_blank">无求备斋笔记</a>
+</div></div> 
+</div>
+</body>
+<script src="https://use.typekit.net/hvv6ahj.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>C++通过迭代修改字符串本身（auto类型说明符）</title>
+	<meta name="description" content="以字符串这种支持for (declaration : expression)	statement这样for语句迭代的数据结构为例，我们看看auto关键字在类型推断中的作用。```cppstring s = “I LOVE YOU!”;">
+	<meta name="keywords" content="cpp, C++ Primer, 寒鸥惊起一双双" />
+	<link rel="canonical" href="https://blog.bobliao.xyz/%E7%AC%94%E8%AE%B0/2018/04/21/auto-recursive.html">
+	<link rel="alternate" type="application/rss+xml" title="寒鸥惊起一双双" href="https://blog.bobliao.xyz/feed.xml" />
+   	<link rel="stylesheet" type="text/css" href="/css/index.css">
+</head>
+
+<body>
+<div class="body-wrapper">
+<div class="nav-header">
+<a href="/">寒鸥惊起一双双</a> | <a href="https://github.com/foreverlms" target="_blank">Github</a> |<a href="/about"> 关于我 </a></div>
+<div class="main-body">
+<header>
+<h2>C++通过迭代修改字符串本身（auto类型说明符）</h2>
+<p><i>2018-04-21</i></p>
+</header>
+<article>
+<p>以字符串这种支持</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="p">(</span><span class="n">declaration</span> <span class="o">:</span> <span class="n">expression</span><span class="p">)</span>
+	<span class="n">statement</span>
+</code></pre></div></div>
+<p>这样<code class="highlighter-rouge">for</code>语句迭代的数据结构为例，我们看看<code class="highlighter-rouge">auto</code>关键字在类型推断中的作用。</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">string</span> <span class="n">s</span> <span class="o">=</span> <span class="s">"I LOVE YOU!"</span><span class="p">;</span>
+
+<span class="k">for</span> <span class="p">(</span><span class="kt">char</span> <span class="n">ch</span> <span class="o">:</span> <span class="n">s</span><span class="p">){</span>
+   	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">ch</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>输出：</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>I LOVE YOU!
+</code></pre></div></div>
+<p>这种情况下用不用<code class="highlighter-rouge">auto</code>都无所谓，因为这时候<code class="highlighter-rouge">auto</code>并不能减少代码量，但是一到复杂的循环时就可以体现出来了，因此最好还是用<code class="highlighter-rouge">auto</code>。
+像上面那样对string进行遍历并不能改变其本身，<code class="highlighter-rouge">ch</code>是<code class="highlighter-rouge">s</code>中每个字符的副本拷贝。想要改变<code class="highlighter-rouge">s</code>本身，则要限定参与遍历的是引用：</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="o">&amp;</span><span class="n">ch</span> <span class="o">:</span> <span class="n">s</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">ch</span> <span class="o">=</span> <span class="n">tolower</span><span class="p">(</span><span class="n">ch</span><span class="p">);</span>
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">ch</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>输出：</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>i love you!
+</code></pre></div></div>
+<p>这样<code class="highlighter-rouge">ch</code>是<code class="highlighter-rouge">s</code>中每个字符的引用，对<code class="highlighter-rouge">ch</code>进行修改也就可以修改<code class="highlighter-rouge">s</code>本身了。
+<code class="highlighter-rouge">for-each</code>这样的语法应用于多维数组时，需要注意的是外层循环要使用引用：</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">array</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">},{</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">},{</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">}</span> <span class="p">};</span>
+
+<span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="o">&amp;</span><span class="n">row</span> <span class="o">:</span> <span class="n">array</span><span class="p">){</span>
+    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">col</span> <span class="o">:</span> <span class="n">row</span><span class="p">)</span>
+        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">col</span> <span class="o">&lt;&lt;</span> <span class="s">" "</span><span class="p">;</span>
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>如果<code class="highlighter-rouge">row</code>不是引用，那么它会被自动转化为对这个二维数组每一行的指针，成为了指针，内层循环对指针进行遍历就当然不合法了。
+下面就<code class="highlighter-rouge">auto</code>比较特殊的一点来举个栗子：</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">foo</span> <span class="o">=</span> <span class="mi">11</span><span class="p">;</span>
+<span class="k">const</span> <span class="kt">int</span> <span class="o">&amp;</span><span class="n">a</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+<span class="kt">int</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">foo</span><span class="p">;</span>
+
+<span class="k">auto</span> <span class="n">x</span> <span class="o">=</span> <span class="n">foo</span><span class="p">;</span><span class="c1">//x是int</span>
+<span class="k">auto</span> <span class="n">y</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span><span class="c1">//y是int，int类型的变量y当然可以用引用a来初始化，这里a的顶层const属性被移除。</span>
+<span class="k">auto</span> <span class="o">&amp;</span><span class="n">yy</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span><span class="c1">//yy是const int &amp;，所以可以用a来对yy进行初始化。</span>
+<span class="k">auto</span> <span class="n">pp</span> <span class="o">=</span> <span class="n">p</span><span class="p">;</span><span class="c1">//这个与下面一样，我暂时还不能搞懂</span>
+<span class="k">auto</span> <span class="o">*</span><span class="n">ppp</span> <span class="o">=</span> <span class="n">p</span><span class="p">;</span><span class="c1">//ppp是int *，可以用p赋值初始化</span>
+
+<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">y</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">yy</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">pp</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">ppp</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</code></pre></div></div>
+<p>结果：</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="mi">10</span>
+<span class="mi">10</span>
+<span class="mh">0x61fefc</span>
+<span class="mh">0x61fefc</span>
+</code></pre></div></div>
+<p>发现没有，<code class="highlighter-rouge">pp</code>与<code class="highlighter-rouge">ppp</code>是一样的，这里涉及到<code class="highlighter-rouge">auto</code>的一些原理，我不是太清楚。而且<code class="highlighter-rouge">auto</code>定义的是引用时，初始化值顶层的<code class="highlighter-rouge">const</code>属性并不会移除，<code class="highlighter-rouge">yy</code>是个例子；<code class="highlighter-rouge">auto</code>定义的不是引用时，初始化值顶层的<code class="highlighter-rouge">const</code>属性会被移除，<code class="highlighter-rouge">y</code>就是个例子。</p>
+
+</article>
+<div id="info-bottom">
+<hr>
+<p>标签: <block class="tag"><a href="/archive/#cpp">cpp</a></block><block class="tag"><a href="/archive/#C++ Primer">C++ Primer</a></block></p>
+<p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
+<p><b>聊天</b>请在 <a href="https://gitter.im/foreverlms/community" target="_blank">gitter.im/foreverlms</a> </p>
+</div>
+
+</div>
+<div class="info-bottom"><div class="info-bottom-text">
+License <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a> | Subscribe <a href="/feed.xml">RSS</a> | Email <a href="mailto:codechaser@163.com">codechaser囧163.com</a> | 博客模板 <a href="https://fzheng.me/" target="_blank">无求备斋笔记</a>
+</div></div> 
+</div>
+</body>
+<script src="https://use.typekit.net/hvv6ahj.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+</html>

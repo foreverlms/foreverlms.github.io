@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>getchar与putchar缓冲区以及字符串数组、指针</title>
+	<meta name="description" content="getchar与putchar小记">
+	<meta name="keywords" content="c, C Primer Plus, 寒鸥惊起一双双" />
+	<link rel="canonical" href="https://blog.bobliao.xyz/%E7%AC%94%E8%AE%B0/2018/03/06/c-getchar-putchar.html">
+	<link rel="alternate" type="application/rss+xml" title="寒鸥惊起一双双" href="https://blog.bobliao.xyz/feed.xml" />
+   	<link rel="stylesheet" type="text/css" href="/css/index.css">
+</head>
+
+<body>
+<div class="body-wrapper">
+<div class="nav-header">
+<a href="/">寒鸥惊起一双双</a> | <a href="https://github.com/foreverlms" target="_blank">Github</a> |<a href="/about"> 关于我 </a></div>
+<div class="main-body">
+<header>
+<h2>getchar与putchar缓冲区以及字符串数组、指针</h2>
+<p><i>2018-03-06</i></p>
+</header>
+<article>
+<p><code class="highlighter-rouge">getchar</code>与<code class="highlighter-rouge">putchar</code>小记
+<!--more--></p>
+
+<h2 id="getchar与putchar缓冲区"><code class="highlighter-rouge">getchar</code>与<code class="highlighter-rouge">putchar</code>缓冲区</h2>
+<p>有下面的语句段：</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">while</span> <span class="p">((</span><span class="n">s</span> <span class="o">=</span> <span class="n">getchar</span><span class="p">())</span> <span class="o">!=</span> <span class="sc">'\n'</span><span class="p">){</span>
+        <span class="n">putchar</span><span class="p">(</span><span class="n">s</span><span class="p">);</span>
+        <span class="n">putchar</span><span class="p">(</span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="p">}</span>
+</code></pre></div></div>
+<p>这个while循环是怎么工作的呢？
+首先<code class="highlighter-rouge">getchar</code>在数据缓冲区里读数据进来，这个读取数据是一个个读的，循环依次判断读进来的字符是不是为换行符，是的话就跳出循环，不是就打印出该字符。其实在<code class="highlighter-rouge">getchar</code>读取字符之前，通过键盘输入的字符已经通过<code class="highlighter-rouge">stdin</code>流全部存入了缓冲区中，<code class="highlighter-rouge">getchar</code>只在用户输入了换行符时才会去读取缓冲区里的数据。</p>
+<h2 id="c字符串数组与指针">C字符串数组与指针</h2>
+<p>在C中字符串实质上是最后一个元素为空字符的<code class="highlighter-rouge">char</code>数组，而我们知道数组与指针是有关联的。声明一个字符串有以下两种方式：</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">char</span> <span class="o">*</span><span class="n">string1</span> <span class="o">=</span> <span class="s">"foo"</span><span class="p">;</span>
+<span class="c1">//通过指针声明，string1其实是指向"foo"这个字符串第一个char字符'f'的地址</span>
+<span class="kt">char</span> <span class="n">string2</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="s">"foo"</span><span class="p">;</span>
+<span class="c1">//通过char数组生明字符串，string2是一个数组</span>
+</code></pre></div></div>
+<p>这两种声明方式有一点不同，就是数组名<code class="highlighter-rouge">string2</code>是个<strong>常量</strong>，而指针名<code class="highlighter-rouge">string1</code>是一个<strong>变</strong>量。数组形式的<code class="highlighter-rouge">string[4]</code>是计算机内存中分配的用于存储四个字符<code class="highlighter-rouge">'f','o','o','o','\0'</code>，<code class="highlighter-rouge">string2</code>既是数组名，也是首个字符<code class="highlighter-rouge">string[0]</code>的地址，<code class="highlighter-rouge">string2</code>的值不能更改，可以通过<code class="highlighter-rouge">string2+1</code>来访问第二个字符<code class="highlighter-rouge">'o'</code>，但不能这样用：<code class="highlighter-rouge">++string2</code>，C中规定<code class="highlighter-rouge">++</code>自增符号只能用于变量，<code class="highlighter-rouge">string2</code>这里显然是个常量，它的值是该数组首个元素的地址。对于<code class="highlighter-rouge">string1</code>形式，C Primer Plus中这样说：</p>
+<blockquote>
+  <p>指针形式（也就是我们这里的<code class="highlighter-rouge">string1</code>）会在静态存储区为字符串预留4个元素的空间（最后一个存储空间用来放<code class="highlighter-rouge">'\0'</code>）。一旦程序开始执行，还要为指针变量<code class="highlighter-rouge">string1</code>另外预留一个存储位置，以在该指针变量中存储字符串地址。这个变量初始时指向字符串的第一个字符，但是它的值是可以改变的。因此，可以对它使用增量运算符（例<code class="highlighter-rouge">++string1</code>将指向第二个字符<code class="highlighter-rouge">'o'</code>）。<strong>总之数组形式的字符串初始化是从静态存储区把一个字符串赋值给数组，而指针初始化只是复制字符串的地址。</strong></p>
+</blockquote>
+
+<p>这里我们就很清楚了两种形式的不同。一般推荐用数组来定义字符串，因为用指针形式定义字符串时，若是修改了指针指向的字符串某个字符可能会导致所有使用该地址字符的值发生变化，这和编译器的实现方式有关。
+在访问字符串，例如<code class="highlighter-rouge">puts</code>时，不管是数组形式还是指针形式，会一直打印字符知道碰到空字符才结束。</p>
+<h2 id="字符串数组">字符串数组</h2>
+<p>考虑到一下形式定义：</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kt">char</span> <span class="p">(</span><span class="o">*</span><span class="n">list</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="s">"a"</span><span class="p">,</span><span class="s">"b"</span> <span class="p">};</span><span class="c1">//1</span>
+<span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">multiple_strings</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="c1">//2</span>
+	<span class="s">"I love you"</span><span class="p">,</span>
+	<span class="s">"You are beautiful"</span><span class="p">,</span>
+	<span class="s">"You makes me happy"</span> <span class="p">};</span>
+
+</code></pre></div></div>
+<p>你会发现1处会报警告：<code class="highlighter-rouge">Incompatible pointer types initializing 'char (*)[2]' with an expression of type 'char [2]'; take the address with &amp;</code>因为此处声明的list是一个指向由两个字符构成的元素的元素的地址，而<code class="highlighter-rouge">"a"</code>是一个字符串，并不是个字符，因此我们得把<code class="highlighter-rouge">"a"</code>改成<code class="highlighter-rouge">'a'</code>。其实这样也是错误的，我们声明list是个<strong>指针</strong>，指向一个二维数组的第一个元素，那么就不要用<strong>一整个二维数组类型</strong>去初始化它，最好这样：</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">char</span> <span class="p">(</span><span class="o">*</span><span class="n">list</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="sc">'a'</span><span class="p">,</span><span class="sc">'b'</span><span class="p">};</span>
+<span class="kt">char</span> <span class="n">test</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="p">{</span><span class="sc">'a'</span><span class="p">,</span><span class="sc">'b'</span><span class="p">},{</span><span class="sc">'b'</span><span class="p">,</span><span class="sc">'c'</span><span class="p">}</span> <span class="p">};</span>
+<span class="n">list</span> <span class="o">=</span> <span class="n">test</span><span class="p">;</span>
+</code></pre></div></div>
+<p>这样不会有任何警告。
+再看注释2处什么意思呢？这其实定义了一个字符串数组，但是这是一个一位数组，而不是二维数组（我们知道二维数组指针形式声明并不是这样的），数组里面的每个元素都是一个char类型元素的地址，每个元素都是对应字符串第一个字符的地址，也就有下列关系成立：
+<code class="highlighter-rouge">*multiple_strings[0] == 'I'; *multiple_strings == 'Y'</code>。对指针进行数组式操作在这里也是成立的：
+<code class="highlighter-rouge">multiple_strings[1][2]</code>就对应的就是第二个字符串<code class="highlighter-rouge">You</code>中的<code class="highlighter-rouge">'u'</code>。
+关于这部分的详细知识可以参见C Primer Plus的第十一章关于字符串数组的部分。
+总结：</p>
+<h3 id="声明一个数组将为数据分配存储空间而生明一个指针只为一个地址分配存储空间">声明一个数组将为数据分配存储空间；而生明一个指针只为一个地址分配存储空间。</h3>
+
+
+</article>
+<div id="info-bottom">
+<hr>
+<p>标签: <block class="tag"><a href="/archive/#c">c</a></block><block class="tag"><a href="/archive/#C Primer Plus">C Primer Plus</a></block></p>
+<p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
+<p><b>聊天</b>请在 <a href="https://gitter.im/foreverlms/community" target="_blank">gitter.im/foreverlms</a> </p>
+</div>
+
+</div>
+<div class="info-bottom"><div class="info-bottom-text">
+License <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a> | Subscribe <a href="/feed.xml">RSS</a> | Email <a href="mailto:codechaser@163.com">codechaser囧163.com</a> | 博客模板 <a href="https://fzheng.me/" target="_blank">无求备斋笔记</a>
+</div></div> 
+</div>
+</body>
+<script src="https://use.typekit.net/hvv6ahj.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+</html>

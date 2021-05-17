@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>浅谈矩阵的特征值</title>
+	<meta name="description" content="">
+	<meta name="keywords" content="slam, 寒鸥惊起一双双" />
+	<link rel="canonical" href="https://blog.bobliao.xyz/%E7%AC%94%E8%AE%B0/2019/06/12/%E6%B5%85%E8%B0%88%E7%9F%A9%E9%98%B5%E7%9A%84%E7%89%B9%E5%BE%81%E5%80%BC.html">
+	<link rel="alternate" type="application/rss+xml" title="寒鸥惊起一双双" href="https://blog.bobliao.xyz/feed.xml" />
+   	<link rel="stylesheet" type="text/css" href="/css/index.css">
+</head>
+
+<body>
+<div class="body-wrapper">
+<div class="nav-header">
+<a href="/">寒鸥惊起一双双</a> | <a href="https://github.com/foreverlms" target="_blank">Github</a> |<a href="/about"> 关于我 </a></div>
+<div class="main-body">
+<header>
+<h2>浅谈矩阵的特征值</h2>
+<p><i>2019-06-12</i></p>
+</header>
+<article>
+<ul id="markdown-toc">
+  <li><a href="#基本定义" id="markdown-toc-基本定义">基本定义</a></li>
+  <li><a href="#特征值与基变换" id="markdown-toc-特征值与基变换">特征值与基变换</a></li>
+  <li><a href="#特征值与二次型" id="markdown-toc-特征值与二次型">特征值与二次型</a></li>
+  <li><a href="#svd分解" id="markdown-toc-svd分解">SVD分解</a></li>
+</ul>
+
+<p>矩阵的特征值（Eigen value）以及由其衍生出的特征向量（Eigen vector）在矩阵运算中有着极其重要的地位，利用它们的性质来优化运算是求解复杂问题的好方法。</p>
+
+<h2 id="基本定义">基本定义</h2>
+
+<blockquote>
+  <p>对于方阵$A$，若存在一个数$\lambda$以及非零向量$\vec{x}$满足：$A\vec{x}=\lambda \vec{x}$，则称$\lambda$为$A$的一个特征值，$\vec{x}$为$A$的一个特征向量。</p>
+</blockquote>
+
+<h2 id="特征值与基变换">特征值与基变换</h2>
+
+<h2 id="特征值与二次型">特征值与二次型</h2>
+
+<h2 id="svd分解">SVD分解</h2>
+
+<p><strong><center>未完待续</center></strong></p>
+
+</article>
+<div id="info-bottom">
+<hr>
+<p>标签: <block class="tag"><a href="/archive/#slam">slam</a></block></p>
+<p><b>留言</b>请用 <a href="https://github.com/foreverlms/foreverlms.github.io/issues"> Github Issues </a></p>
+<p><b>聊天</b>请在 <a href="https://gitter.im/foreverlms/community" target="_blank">gitter.im/foreverlms</a> </p>
+</div>
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}, 
+  "HTML-CSS": {
+    availableFonts: ["STIX","TeX"],
+    preferredFont: "STIX",
+    webFont: "STIX-Web"
+  }});
+</script> -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+	  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}, 
+	  "HTML-CSS":
+	  {
+	    availableFonts: ["STIX","TeX"],
+	    preferredFont: "STIX",
+	    webFont: "STIX-Web",
+	    scale: 90,
+	    minScaleAdjust: 70
+	  },
+	  CommonHTML: 
+	  {
+	    scale: 90,
+	    minScaleAdjust: 70
+	  }
+	});
+</script>
+
+<!-- <script>
+MathJax.Hub.Queue(function () {
+  var math = document.getElementById("rescale");
+  var w = math.offsetWidth, W = math.parentNode.offsetWidth-40;
+  if (w > W) {
+    math.style.fontSize = (90*W/w)+"%";
+    MathJax.Hub.getAllJax(math)[0].Rerender();
+  }
+});
+</script> -->
+<!-- <script type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script> -->
+
+<script src="https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+</div>
+<div class="info-bottom"><div class="info-bottom-text">
+License <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a> | Subscribe <a href="/feed.xml">RSS</a> | Email <a href="mailto:codechaser@163.com">codechaser囧163.com</a> | 博客模板 <a href="https://fzheng.me/" target="_blank">无求备斋笔记</a>
+</div></div> 
+</div>
+</body>
+<script src="https://use.typekit.net/hvv6ahj.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+</html>
